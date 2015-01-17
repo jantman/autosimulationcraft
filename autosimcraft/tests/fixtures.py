@@ -40,6 +40,10 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 import pytest
 from mock import MagicMock, call, patch, Mock, mock_open
+import battlenet
+import logging
+from contextlib import nested
+from autosimcraft import autosimcraft
 
 
 class Container:
@@ -47,7 +51,7 @@ class Container:
 
 
 @pytest.fixture
-def mock_ns(self):
+def mock_ns():
     """ a mocked AutoSimcraft object """
     bn = MagicMock(spec_set=battlenet.Connection)
     conn = MagicMock(spec_set=battlenet.Connection)
@@ -72,7 +76,7 @@ def mock_ns(self):
     return (bn, rc, mocklog, s, conn, lcc)
 
 @pytest.fixture
-def mock_bnet_character(self, bnet_data):
+def mock_bnet_character(bnet_data):
     char = battlenet.things.Character(battlenet.UNITED_STATES,
                                       realm='Area 52',
                                       name='jantman',

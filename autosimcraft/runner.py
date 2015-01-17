@@ -43,6 +43,7 @@ import argparse
 import os
 
 from config import DEFAULT_CONFDIR
+from autosimcraft import AutoSimcraft
 
 def parse_args(argv):
     """

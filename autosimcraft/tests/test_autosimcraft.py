@@ -960,7 +960,7 @@ class Test_AutoSimcraft:
         """ send_gmail() test """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         settings = Container()
-        setattr(settings, 'GMAIL_USER', 'myusername')
+        setattr(settings, 'GMAIL_USERNAME', 'myusername')
         setattr(settings, 'GMAIL_PASSWORD', 'mypassword')
         with nested(
                 patch('autosimcraft.autosimcraft.smtplib.SMTP', autospec=True),

@@ -390,7 +390,7 @@ class AutoSimcraft:
         """
         s = smtplib.SMTP('smtp.gmail.com:587')
         s.starttls()
-        s.login(self.settings.GMAIL_USER, self.settings.GMAIL_PASSWORD)
+        s.login(self.settings.GMAIL_USERNAME, self.settings.GMAIL_PASSWORD)
         s.sendmail(from_addr, [dest], msg_s)
         s.quit()
 
