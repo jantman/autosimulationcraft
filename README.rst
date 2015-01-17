@@ -23,11 +23,33 @@ autosimcraft
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
    :target: http://www.repostatus.org/#active
 
-A python script to run SimulationCraft reports for World of Warcraft characters when their gear/stats/level/etc. changes.
+A python script to run `SimulationCraft <http://simulationcraft.org/>`_ reports for World of Warcraft characters when their gear/stats/level/etc. changes.
+
+What It Does
+-------------
+
+When run, the script will first read in its configuration file (see below).
+
+For each character in the ``CHARACTERS`` dictionary, it will use the BattleNet API
+to request details about the character (currently: appearance, equipment, level,
+professions, stats and talents) and cache this information locally (in the same
+directory as the configuration file). The first time a specific character is
+found in the configuration file, a ``simc`` report will be generated for the
+character, and emailed to a configurable (per-character) list of email addresses.
+
+On subsequent runs, the script will compare BattleNet's current information for
+the character with what the script saved to disk during its last run. If the
+information is the same, that character will be skipped. Otherwise, a report
+will be generated and sent via email (and also saved to disk).
+
+This script is suitable for running via cron or another job scheduler (say, daily),
+and it will automatically run SimulationCraft and email the report whenever
+changes occur on the characters.
 
 Requirements
 ------------
 
+* A working installation of `SimulationCraft <http://simulationcraft.org/>`_ with (at least) the command line portion.
 * Python 2.7+ (currently tested with 2.7, 3.2, 3.3, 3.4)
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 
@@ -46,12 +68,20 @@ system-wide, you can (using sudo).
 Configuration
 -------------
 
-Something here.
+Running
+
+.. code-block:: bash
+
+    autosimcraft --genconfig
+
+Will generate a default configuration file at ``~/.nightly_simcraft/settings.py``. Open this with your
+favorite text editor; the comments should be enough to help you configure it.
 
 Usage
 -----
 
-Something else here.
+I'd recommend calling ``autosimcraft`` from cron, or some other method of running it automatically
+on a regular basis. If you want to, you _can_ run it manually.
 
 Bugs and Feature Requests
 -------------------------
