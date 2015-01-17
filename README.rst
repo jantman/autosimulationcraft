@@ -74,7 +74,7 @@ Running
 
     autosimcraft --genconfig
 
-Will generate a default configuration file at ``~/.nightly_simcraft/settings.py``. Open this with your
+Will generate a default configuration file at ``~/.autosimcraft/settings.py``. Open this with your
 favorite text editor; the comments should be enough to help you configure it.
 
 Usage
