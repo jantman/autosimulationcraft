@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Python 2.7/3 wrapper script to do a nightly (cron'ed) run of
 [SimulationCraft](http://simulationcraft.org/) when your gear
@@ -85,11 +85,10 @@ else:
 from dictdiffer import diff
 import battlenet
 
+from config import *
+
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(level=logging.ERROR, format=FORMAT)
-
-
-DEFAULT_CONFDIR = '~/.autosimcraft'
 
 
 class AutoSimcraft:
@@ -274,7 +273,7 @@ class AutoSimcraft:
         """
         d = diff(old, new)
         s = ''
-        for x in list(d):
+        for x in sorted(list(d)):
             if x[0] == 'change':
                 s += 'change {item} from {a} to {b}\n'.format(typ=x[0],
                                                             item=x[1],
@@ -444,33 +443,3 @@ class AutoSimcraft:
                     del i['recipes']
         self.logger.debug("cleaned up character data")
         return d
-
-def parse_args(argv):
-    """
-    parse arguments/options
-
-    this uses the new argparse module instead of optparse
-    see: <https://docs.python.org/2/library/argparse.html>
-    """
-    p = argparse.ArgumentParser(description='Sample python script skeleton.')
-    p.add_argument('-d', '--dry-run', dest='dry_run', action='store_true', default=False,
-                   help="dry-run - don't send email, just say what would be sent")
-    p.add_argument('-v', '--verbose', dest='verbose', action='count', default=0,
-                   help='verbose output. specify twice for debug-level output.')
-    p.add_argument('-c', '--configdir', dest='confdir', action='store', type=str, default=DEFAULT_CONFDIR,
-                   help='configuration directory (default: {c})'.format(c=DEFAULT_CONFDIR))
-    p.add_argument('--genconfig', dest='genconfig', action='store_true', default=False,
-                   help='generate a sample configuration file at configdir/settings.py')
-
-    args = p.parse_args(argv)
-
-    return args
-
-if __name__ == "__main__":
-    args = parse_args(sys.argv[1:])
-    if args.genconfig:
-        AutoSimcraft.gen_config(args.confdir)
-        print("Configuration file generated at: {c}".format(c=os.path.join(os.path.abspath(os.path.expanduser(args.confdir)), 'settings.py')))
-        raise SystemExit()
-    script = AutoSimcraft(dry_run=args.dry_run, verbose=args.verbose, confdir=args.confdir)
-    script.run()

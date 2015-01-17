@@ -38,4 +38,4 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-VERSION = '0.0.1'
+DEFAULT_CONFDIR = '~/.autosimcraft'

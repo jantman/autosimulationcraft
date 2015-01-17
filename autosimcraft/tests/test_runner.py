@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-AutoSimcraft
+AutoSimcraft - tests for runner.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/autosimcraft>
@@ -38,4 +38,14 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-VERSION = '0.0.1'
+import autosimcraft.runner
+
+
+def test_parse_argv():
+    """ test parse_argv() """
+    argv = ['-d', '-vv', '-c' 'foobar', '--genconfig']
+    args = autosimcraft.runner.parse_args(argv)
+    assert args.dry_run is True
+    assert args.verbose == 2
+    assert args.confdir == 'foobar'
+    assert args.genconfig is True

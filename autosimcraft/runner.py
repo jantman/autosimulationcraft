@@ -38,4 +38,42 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-VERSION = '0.0.1'
+import sys
+import argparse
+import os
+
+from config import DEFAULT_CONFDIR
+
+def parse_args(argv):
+    """
+    parse arguments/options
+
+    this uses the new argparse module instead of optparse
+    see: <https://docs.python.org/2/library/argparse.html>
+    """
+    p = argparse.ArgumentParser(description='Sample python script skeleton.')
+    p.add_argument('-d', '--dry-run', dest='dry_run', action='store_true', default=False,
+                   help="dry-run - don't send email, just say what would be sent")
+    p.add_argument('-v', '--verbose', dest='verbose', action='count', default=0,
+                   help='verbose output. specify twice for debug-level output.')
+    p.add_argument('-c', '--configdir', dest='confdir', action='store', type=str, default=DEFAULT_CONFDIR,
+                   help='configuration directory (default: {c})'.format(c=DEFAULT_CONFDIR))
+    p.add_argument('--genconfig', dest='genconfig', action='store_true', default=False,
+                   help='generate a sample configuration file at configdir/settings.py')
+
+    args = p.parse_args(argv)
+
+    return args
+
+def console_entry_point():
+    args = parse_args(sys.argv[1:])
+    if args.genconfig:
+        AutoSimcraft.gen_config(args.confdir)
+        print("Configuration file generated at: {c}".format(c=os.path.join(os.path.abspath(os.path.expanduser(args.confdir)), 'settings.py')))
+        raise SystemExit()
+    script = AutoSimcraft(dry_run=args.dry_run, verbose=args.verbose, confdir=args.confdir)
+    script.run()
+
+
+if __name__ == "__main__":
+    console_entry_point()
