@@ -377,10 +377,12 @@ class AutoSimcraft:
         msg['Subject'] = subj
         msg['From'] = from_addr
         msg['To'] = dest_addr
-        msg.preamble = body
+        bodyMIME = MIMEText(body, 'plain')
+        msg.attach(bodyMIME)
         with open(html_path, 'r') as fh:
             html = fh.read()
         html_att = MIMEText(html, 'html', 'utf-8')
+        html_att.add_header('Content-Disposition', 'attachment', filename=os.path.basename(html_path))
         msg.attach(html_att)
         return msg
         
