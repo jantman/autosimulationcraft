@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-AutoSimcraft
+AutoSimcraft - tests for runner.py
 
 The latest version of this package is available at:
 <https://github.com/jantman/autosimcraft>
@@ -38,4 +38,15 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-VERSION = '0.0.1'
+import pytest
+import re
+
+import autosimcraft.version
+
+
+# from: <https://github.com/mojombo/semver.org/issues/59#issuecomment-57884619>
+semver_re = re.compile(r'^((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))(?:-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$')
+
+
+def test_version():
+    assert semver_re.match(autosimcraft.version.VERSION) is not None

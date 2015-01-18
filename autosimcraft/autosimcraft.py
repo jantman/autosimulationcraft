@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Python 2.7/3 wrapper script to do a nightly (cron'ed) run of
 [SimulationCraft](http://simulationcraft.org/) when your gear
@@ -76,6 +76,10 @@ import getpass
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from email.utils import formatdate
+from email.utils import make_msgid
+from email.utils import formataddr
 
 if sys.version_info[0] > 3 or ( sys.version_info[0] == 3 and sys.version_info[1] >= 3):
     import importlib.machinery
@@ -85,11 +89,10 @@ else:
 from dictdiffer import diff
 import battlenet
 
+from config import *
+
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(level=logging.ERROR, format=FORMAT)
-
-
-DEFAULT_CONFDIR = '~/.autosimcraft'
 
 
 class AutoSimcraft:
@@ -232,6 +235,8 @@ class AutoSimcraft:
                 self.do_character(cname, char, changes)
             else:
                 self.logger.info("Character {c} has no changes, skipping.".format(c=cname))
+            self.character_cache[cname] = bnet_info
+            self.write_character_cache()
         self.logger.info("Done with all characters.")
 
     def make_character_name(self, name, realm):
@@ -274,7 +279,7 @@ class AutoSimcraft:
         """
         d = diff(old, new)
         s = ''
-        for x in list(d):
+        for x in sorted(list(d)):
             if x[0] == 'change':
                 s += 'change {item} from {a} to {b}\n'.format(typ=x[0],
                                                             item=x[1],
@@ -352,7 +357,7 @@ class AutoSimcraft:
         if type(emails) == type(""):
             emails = [emails]
         from_addr = getpass.getuser() + '@' + platform.node()
-        subj = 'SimulationCraft output for {c}'.format(c=c_name)
+        subj = 'SimulationCraft report for {c}'.format(c=c_name)
         for dest_addr in emails:
             self.logger.info("Sending email for character {c} to {e}".format(c=c_name, e=dest_addr))
             if self.dry_run:
@@ -368,21 +373,29 @@ class AutoSimcraft:
     def format_message(self, from_addr, dest_addr, subj, c_name, c_diff, html_path, duration, output):
         body = 'SimulationCraft was run for {c} due to the following changes:\n'.format(c=c_name)
         body += '\n' + c_diff + '\n\n'
-        body += 'The run was completed in {d} and the HTML report is attached.\n\n'.format(d=duration)
-        body += 'SimulationCraft output: \n\n{o}\n\n'.format(o=output)
+        body += 'The run was completed in {d} and the HTML report is attached'.format(d=duration)
+        body += '. (Note that you likely need to save the HTML attachment to disk and'
+        body += ' view it from there; it will not render correctly in most email clients.)\n\n'
         footer = 'This run was done on {h} at {t} by autosimcraft.py v{v}'
         body += footer.format(h=platform.node(),
                               t=self.now(),
                               v=self.VERSION)
         msg = MIMEMultipart()
         msg['Subject'] = subj
-        msg['From'] = from_addr
+        msg['From'] = formataddr(('AutoSimcraft', from_addr))
         msg['To'] = dest_addr
-        msg.preamble = body
+        msg['Date'] = formatdate(localtime=True)
+        msg['Message-Id'] = make_msgid()
+        bodyMIME = MIMEText(body, 'plain')
+        msg.attach(bodyMIME)
         with open(html_path, 'r') as fh:
             html = fh.read()
-        html_att = MIMEText(html, 'html', 'utf-8')
+        html_att = MIMEApplication(html)
+        html_att.add_header('Content-Disposition', 'attachment', filename=(c_name + '.html'))
         msg.attach(html_att)
+        output_att = MIMEApplication(output)
+        output_att.add_header('Content-Disposition', 'attachment', filename=(c_name + '_simc_output.txt'))
+        msg.attach(output_att)
         return msg
         
     def send_gmail(self, from_addr, dest, msg_s):
@@ -391,7 +404,7 @@ class AutoSimcraft:
         """
         s = smtplib.SMTP('smtp.gmail.com:587')
         s.starttls()
-        s.login(self.settings.GMAIL_USER, self.settings.GMAIL_PASSWORD)
+        s.login(self.settings.GMAIL_USERNAME, self.settings.GMAIL_PASSWORD)
         s.sendmail(from_addr, [dest], msg_s)
         s.quit()
 
@@ -440,37 +453,6 @@ class AutoSimcraft:
                 del d[i]
         for t in ['primary', 'secondary']:
             for i in d['professions'][t]:
-                if 'recipes' in i:
-                    del i['recipes']
+                del i['recipes']
         self.logger.debug("cleaned up character data")
         return d
-
-def parse_args(argv):
-    """
-    parse arguments/options
-
-    this uses the new argparse module instead of optparse
-    see: <https://docs.python.org/2/library/argparse.html>
-    """
-    p = argparse.ArgumentParser(description='Sample python script skeleton.')
-    p.add_argument('-d', '--dry-run', dest='dry_run', action='store_true', default=False,
-                   help="dry-run - don't send email, just say what would be sent")
-    p.add_argument('-v', '--verbose', dest='verbose', action='count', default=0,
-                   help='verbose output. specify twice for debug-level output.')
-    p.add_argument('-c', '--configdir', dest='confdir', action='store', type=str, default=DEFAULT_CONFDIR,
-                   help='configuration directory (default: {c})'.format(c=DEFAULT_CONFDIR))
-    p.add_argument('--genconfig', dest='genconfig', action='store_true', default=False,
-                   help='generate a sample configuration file at configdir/settings.py')
-
-    args = p.parse_args(argv)
-
-    return args
-
-if __name__ == "__main__":
-    args = parse_args(sys.argv[1:])
-    if args.genconfig:
-        AutoSimcraft.gen_config(args.confdir)
-        print("Configuration file generated at: {c}".format(c=os.path.join(os.path.abspath(os.path.expanduser(args.confdir)), 'settings.py')))
-        raise SystemExit()
-    script = AutoSimcraft(dry_run=args.dry_run, verbose=args.verbose, confdir=args.confdir)
-    script.run()

@@ -46,6 +46,13 @@ This script is suitable for running via cron or another job scheduler (say, dail
 and it will automatically run SimulationCraft and email the report whenever
 changes occur on the characters.
 
+Status
+-------
+
+I got this working for myself originally as a single self-contained script.
+The code - especially the tests - desperately need a refactor. If I keep using
+it, or anyone else starts using it, maybe I'll try that.
+
 Requirements
 ------------
 

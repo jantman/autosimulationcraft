@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-AutoSimcraft
+AutoSimcraft - fixtures for AutoSimcraft
 
 The latest version of this package is available at:
 <https://github.com/jantman/autosimcraft>
@@ -38,4 +38,45 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-VERSION = '0.0.1'
+import pytest
+from mock import MagicMock, call, patch, Mock, mock_open
+import battlenet
+import logging
+from autosimcraft import autosimcraft
+
+
+class Container:
+    pass
+
+
+@pytest.fixture
+def mock_ns():
+    """ a mocked AutoSimcraft object """
+    bn = MagicMock(spec_set=battlenet.Connection)
+    conn = MagicMock(spec_set=battlenet.Connection)
+    bn.return_value = conn
+    rc = Mock()
+    lc = Mock()
+    wc = Mock()
+    mocklog = MagicMock(spec_set=logging.Logger)
+    def mock_ap_se(p):
+        return p
+    def mock_eu_se(p):
+        return p.replace('~/', '/home/user/')
+    with patch('autosimcraft.autosimcraft.battlenet.Connection', bn) as bnp, \
+         patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc) as rcp, \
+         patch('autosimcraft.autosimcraft.AutoSimcraft.load_character_cache', lc) as lcc, \
+         patch('autosimcraft.autosimcraft.os.path.expanduser') as mock_eu, \
+         patch('autosimcraft.autosimcraft.os.path.abspath') as mock_ap:
+        mock_ap.side_effect = mock_ap_se
+        mock_eu.side_effect = mock_eu_se
+        s = autosimcraft.AutoSimcraft(verbose=2, logger=mocklog)
+    return (bn, rc, mocklog, s, conn, lcc)
+
+@pytest.fixture
+def mock_bnet_character(bnet_data):
+    char = battlenet.things.Character(battlenet.UNITED_STATES,
+                                      realm='Area 52',
+                                      name='jantman',
+                                      data=bnet_data)
+    return char
