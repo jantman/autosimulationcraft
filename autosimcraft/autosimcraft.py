@@ -450,7 +450,6 @@ class AutoSimcraft:
                 del d[i]
         for t in ['primary', 'secondary']:
             for i in d['professions'][t]:
-                if 'recipes' in i:
-                    del i['recipes']
+                del i['recipes']
         self.logger.debug("cleaned up character data")
         return d

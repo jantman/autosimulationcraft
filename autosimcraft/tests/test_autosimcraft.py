@@ -229,6 +229,16 @@ class Test_AutoSimcraft:
         assert excinfo.value.code == 1
         assert mocklog.error.call_args_list == [call("ERROR: Settings file must define CHARACTERS list with at least one character")]
 
+    def test_validate_config_ok(self, mock_ns):
+        """ test validate_config() with good config """
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        mock_settings = Container()
+        setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
+        setattr(mock_settings, 'CHARACTERS', ['foo'])
+        setattr(s, 'settings', mock_settings)
+        res = s.validate_config()
+        assert mocklog.error.call_args_list == []
+
     @pytest.mark.skipif(sys.version_info >= (3,3), reason="requires python < 3.3")
     def test_import_from_path_py27(self, mock_ns):
         """ test import_from_path() under py27 """

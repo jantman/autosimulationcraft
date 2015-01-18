@@ -38,51 +38,15 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-from contextlib import nested
-from mock import patch, call
 import pytest
+import re
 
-import autosimcraft.runner
-from fixtures import Container
+import autosimcraft.version
 
 
-def test_parse_argv():
-    """ test parse_argv() """
-    argv = ['-d', '-vv', '-c' 'foobar', '--genconfig']
-    args = autosimcraft.runner.parse_args(argv)
-    assert args.dry_run is True
-    assert args.verbose == 2
-    assert args.confdir == 'foobar'
-    assert args.genconfig is True
+# from: <https://github.com/mojombo/semver.org/issues/59#issuecomment-57884619>
+semver_re = re.compile(r'^((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))(?:-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$')
 
-def test_console_entry_genconfig():
-    """ test console_entry_point() with --genconfig """
-    with nested(
-            patch('autosimcraft.runner.parse_args'),
-            patch('autosimcraft.autosimcraft.AutoSimcraft.gen_config'),
-    ) as (mock_parse_args, mock_gen_config):
-        args = Container()
-        setattr(args, 'genconfig', True)
-        setattr(args, 'confdir', '/foo/bar')
-        mock_parse_args.return_value = args
-        with pytest.raises(SystemExit):
-            autosimcraft.runner.console_entry_point()
-    assert mock_parse_args.call_count == 1
-    assert mock_gen_config.call_args_list == [call('/foo/bar')]
 
-def test_console_entry():
-    """ test console_entry_point() """
-    with nested(
-            patch('autosimcraft.runner.parse_args'),
-            patch('autosimcraft.runner.AutoSimcraft', autospec=True),
-    ) as (mock_parse_args, mock_AS):
-        args = Container()
-        setattr(args, 'genconfig', False)
-        setattr(args, 'confdir', '/foo/bar')
-        setattr(args, 'dry_run', False)
-        setattr(args, 'verbose', 1)
-        mock_parse_args.return_value = args
-        autosimcraft.runner.console_entry_point()
-    assert mock_parse_args.call_count == 1
-    assert mock_AS.mock_calls == [call(dry_run=False, verbose=1, confdir='/foo/bar'), call().run()]
-    
+def test_version():
+    assert semver_re.match(autosimcraft.version.VERSION) is not None
