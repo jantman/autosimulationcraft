@@ -235,8 +235,8 @@ class AutoSimcraft:
                 self.do_character(cname, char, changes)
             else:
                 self.logger.info("Character {c} has no changes, skipping.".format(c=cname))
+            self.write_character_cache()
         self.logger.info("Done with all characters.")
-        self.write_character_cache()
 
     def make_character_name(self, name, realm):
         realm = realm.replace(' ', '')
@@ -372,7 +372,9 @@ class AutoSimcraft:
     def format_message(self, from_addr, dest_addr, subj, c_name, c_diff, html_path, duration, output):
         body = 'SimulationCraft was run for {c} due to the following changes:\n'.format(c=c_name)
         body += '\n' + c_diff + '\n\n'
-        body += 'The run was completed in {d} and the HTML report is attached.\n\n'.format(d=duration)
+        body += 'The run was completed in {d} and the HTML report is attached'.format(d=duration)
+        body += '. (Note that you likely need to save the HTML attachment to disk and'
+        body += ' view it from there; it will not render correctly in most email clients.)\n\n'
         body += 'SimulationCraft output: \n\n{o}\n\n'.format(o=output)
         footer = 'This run was done on {h} at {t} by autosimcraft.py v{v}'
         body += footer.format(h=platform.node(),

@@ -130,7 +130,7 @@ class Test_AutoSimcraft:
 
     def test_read_config_missing(self, mock_ns):
         """ test read_config() when settings file is missing """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         with nested(
                 patch('autosimcraft.autosimcraft.os.path.exists'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.import_from_path'),
@@ -147,7 +147,7 @@ class Test_AutoSimcraft:
 
     def test_read_config(self, mock_ns):
         """ test read_config() working correctly """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         mock_settings = Container()
         setattr(mock_settings, 'CHARACTERS', [])
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
@@ -196,7 +196,7 @@ class Test_AutoSimcraft:
 
     def test_validate_config_no_characters(self, mock_ns):
         """ test validate_config() with no characters """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         mock_settings = Container()
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(s, 'settings', mock_settings)
@@ -207,7 +207,7 @@ class Test_AutoSimcraft:
 
     def test_validate_config_characters_not_list(self, mock_ns):
         """ test validate_config() if CHARACTERS is not a list """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         mock_settings = Container()
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(mock_settings, 'CHARACTERS', 'foo')
@@ -219,7 +219,7 @@ class Test_AutoSimcraft:
 
     def test_validate_config_characters_empty(self, mock_ns):
         """ test validate_config() if CHARACTERS is an empty list """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         mock_settings = Container()
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(mock_settings, 'CHARACTERS', [])
@@ -232,7 +232,7 @@ class Test_AutoSimcraft:
     @pytest.mark.skipif(sys.version_info >= (3,3), reason="requires python < 3.3")
     def test_import_from_path_py27(self, mock_ns):
         """ test import_from_path() under py27 """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         # this is a bit of a hack...
         settings_mock = Mock()
         imp_mock = Mock()
@@ -250,7 +250,7 @@ class Test_AutoSimcraft:
     @pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
     def test_import_from_path_py33(self, mock_ns):
         """ test import_from_path() under py33 """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         settings_mock = Mock()
         machinery_mock = Mock()
         sfl_mock = Mock()
@@ -271,14 +271,14 @@ class Test_AutoSimcraft:
 
     def test_validate_character(self, mock_ns):
         """ test validate_character() with correct character """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         char = {'realm': 'rname', 'name': 'cname'}
         result = s.validate_character(char)
         assert result is True
 
     def test_validate_character_notdict(self, mock_ns):
         """ test validate_character() where char is not a dict """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         char = 'realm'
         mocklog.debug.reset_mock()
         result = s.validate_character(char)
@@ -287,7 +287,7 @@ class Test_AutoSimcraft:
 
     def test_validate_character_no_realm(self, mock_ns):
         """ test validate_character() with character missing realm """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         char = {'name': 'cname'}
         mocklog.debug.reset_mock()
         result = s.validate_character(char)
@@ -296,7 +296,7 @@ class Test_AutoSimcraft:
 
     def test_validate_character_no_char(self, mock_ns):
         """ test validate_character() with character missing name """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         char = {'realm': 'rname'}
         mocklog.debug.reset_mock()
         result = s.validate_character(char)
@@ -305,7 +305,7 @@ class Test_AutoSimcraft:
 
     def test_run(self, mock_ns):
         """ test run() in ideal/working situation """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
         setattr(s_container, 'CHARACTERS', chars)
@@ -316,7 +316,8 @@ class Test_AutoSimcraft:
                 patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc):
+                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
+        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
             mock_chc.return_value = 'foo'
             mock_validate.return_value = True
             mock_get_bnet.return_value = {}
@@ -326,11 +327,11 @@ class Test_AutoSimcraft:
         assert mock_get_bnet.call_args_list == [call('realmone', 'nameone')]
         assert mock_do_char.call_args_list == [call('nameone@realmone', chars[0], 'foo')]
         assert mock_chc.call_args_list == [call('nameone@realmone', {})]
-        assert wcc.call_args_list == [call()]
+        assert mock_wcc.call_args_list == [call()]
 
     def test_run_invalid_character(self, mock_ns):
         """ test run() with an invalid character """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
         setattr(s_container, 'CHARACTERS', chars)
@@ -341,7 +342,8 @@ class Test_AutoSimcraft:
                 patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc):
+                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
+        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
             mock_chc.return_value = None
             mock_validate.return_value = False
             mock_get_bnet.return_value = {}
@@ -352,11 +354,11 @@ class Test_AutoSimcraft:
         assert mocklog.warning.call_args_list == [call("Character configuration not valid, skipping: nameone@realmone")]
         assert mock_do_char.call_args_list == []
         assert mock_chc.call_args_list == []
-        assert wcc.call_args_list == []
+        assert mock_wcc.call_args_list == []
 
     def test_run_no_battlenet(self, mock_ns):
         """ test run() with character not found on battlenet """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
         setattr(s_container, 'CHARACTERS', chars)
@@ -367,7 +369,8 @@ class Test_AutoSimcraft:
                 patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc):
+                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
+        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
             mock_validate.return_value = True
             mock_get_bnet.return_value = None
             mock_chc.return_value = True
@@ -378,11 +381,11 @@ class Test_AutoSimcraft:
         assert mocklog.warning.call_args_list == [call("Character nameone@realmone not found on battlenet; skipping.")]
         assert mock_do_char.call_args_list == []
         assert mock_chc.call_args_list == []
-        assert wcc.call_args_list == []
+        assert mock_wcc.call_args_list == []
 
     def test_run_not_updated(self, mock_ns):
         """ test run() with no updates to character """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
         setattr(s_container, 'CHARACTERS', chars)
@@ -393,7 +396,8 @@ class Test_AutoSimcraft:
                 patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc):
+                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
+        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
             mock_chc.return_value = None
             mock_validate.return_value = True
             mock_get_bnet.return_value = {}
@@ -403,11 +407,11 @@ class Test_AutoSimcraft:
         assert mock_get_bnet.call_args_list == [call('realmone', 'nameone')]
         assert mock_do_char.call_args_list == []
         assert mock_chc.call_args_list == [call('nameone@realmone', {})]
-        assert wcc.call_args_list == [call()]
+        assert mock_wcc.call_args_list == [call()]
 
     def test_get_battlenet(self, mock_ns, mock_bnet_character):
         """ test get_battlenet() """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         conn.get_character.return_value = mock_bnet_character
         result = s.get_battlenet('rname', 'cname')
         assert conn.get_character.call_args_list == [call(battlenet.UNITED_STATES,
@@ -436,7 +440,7 @@ class Test_AutoSimcraft:
 
     def test_get_battlenet_badchar(self, mock_ns, mock_bnet_character):
         """ test get_battlenet() with character not found """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         conn.get_character.side_effect = battlenet.exceptions.CharacterNotFound()
         result = s.get_battlenet('rname', 'cname')
         assert conn.get_character.call_args_list == [call(battlenet.UNITED_STATES,
@@ -449,7 +453,7 @@ class Test_AutoSimcraft:
 
     def test_load_char_cache_noexist(self, mock_ns):
         """ test load_character_cache() on nonexistent file """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         mocko = mock_open()
         with nested(
                 patch('autosimcraft.autosimcraft.os.path.exists'),
@@ -463,7 +467,7 @@ class Test_AutoSimcraft:
 
     def test_load_char_cache(self, mock_ns):
         """ test load_character_cache() """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         with nested(
                 patch('autosimcraft.autosimcraft.os.path.exists'),
                 patch('autosimcraft.autosimcraft.open', create=True),
@@ -480,7 +484,7 @@ class Test_AutoSimcraft:
 
     def test_write_char_cache(self, mock_ns):
         """ test write_character_cache() """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         cache_content = {"foo": "bar", "baz": 3}
         openmock = MagicMock()
         with nested(
@@ -497,7 +501,7 @@ class Test_AutoSimcraft:
 
     def test_char_has_changes_true(self, mock_ns, char_data):
         """ test character_has_changes() with changes """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         orig_data = char_data
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {cname: orig_data}
@@ -512,7 +516,7 @@ class Test_AutoSimcraft:
 
     def test_character_diff_item(self, mock_ns, char_data):
         """ test character_diff() """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {cname: char_data}
         new_data = deepcopy(char_data)
@@ -541,7 +545,7 @@ class Test_AutoSimcraft:
 
     def test_char_has_changes_false(self, mock_ns, char_data):
         """ test character_has_changes() without changes """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         orig_data = char_data
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {cname: orig_data}
@@ -552,7 +556,7 @@ class Test_AutoSimcraft:
 
     def test_char_has_changes_new(self, mock_ns, char_data):
         """ test character_has_changes() on never-before-seen character """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         orig_data = char_data
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {}
@@ -563,7 +567,7 @@ class Test_AutoSimcraft:
 
     def test_do_character_no_simc(self, mock_ns):
         """ test do_character() with SIMC_PATH non-existant """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
         c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
         c_diff = 'diffcontent'
@@ -599,7 +603,7 @@ class Test_AutoSimcraft:
 
     def test_do_character(self, mock_ns):
         """ test do_character() in normal case """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
         c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
         c_diff = 'diffcontent'
@@ -644,7 +648,7 @@ class Test_AutoSimcraft:
 
     def test_do_character_simc_error(self, mock_ns):
         """ test do_character() with simc exiting non-0 """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
         c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
         c_diff = 'diffcontent'
@@ -684,7 +688,7 @@ class Test_AutoSimcraft:
 
     def test_do_character_no_html(self, mock_ns):
         """ do_character() - simc runs but HTML not created """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
         c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
         c_diff = 'diffcontent'
@@ -726,7 +730,7 @@ class Test_AutoSimcraft:
 
     def test_send_char_email(self, mock_ns):
         """ test send_char_email() in normal case """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
         c_name = 'cname@rname'
         c_diff = 'diffcontent'
@@ -770,7 +774,7 @@ class Test_AutoSimcraft:
 
     def test_send_char_string_email(self, mock_ns):
         """ test send_char_email() with email as a string """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_settings = {'realm': 'rname',
                       'name': 'cname',
                       'email': 'foo@example.com'}
@@ -815,7 +819,7 @@ class Test_AutoSimcraft:
 
     def test_send_char_email_gmail(self, mock_ns):
         """ test send_char_email() via gmail """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_settings = {'realm': 'rname',
                       'name': 'cname',
                       'email': 'foo@example.com'}
@@ -862,7 +866,7 @@ class Test_AutoSimcraft:
 
     def test_send_char_email_dryrun(self, mock_ns):
         """ test send_char_email() for a dry run """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         c_settings = {'realm': 'rname',
                       'name': 'cname',
                       'email': ['foo@example.com']}
@@ -901,7 +905,7 @@ class Test_AutoSimcraft:
 
     def test_format_message(self, mock_ns):
         """ test format_message() """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         dest_addr = 'foo@example.com'
         subj = 'mysubj'
         c_name = 'cname@rname'
@@ -913,7 +917,9 @@ class Test_AutoSimcraft:
         htmlcontent = '<html><head><title>foo</title></head><body>bar</body></html>'
         expected = 'SimulationCraft was run for cname@rname due to the following changes:\n'
         expected += '\ncharacterDiffHere\n\n'
-        expected += 'The run was completed in 1:02:03 and the HTML report is attached.\n\n'
+        expected += 'The run was completed in 1:02:03 and the HTML report is attached'
+        expected += '. (Note that you likely need to save the HTML attachment to disk and'
+        expected += ' view it from there; it will not render correctly in most email clients.)\n\n'
         expected += 'SimulationCraft output: \n\nsimcoutput\n\n'
         expected += 'This run was done on nodename at 2014-01-01 00:00:00 by autosimcraft.py va.b.c'
         with nested(
@@ -934,23 +940,19 @@ class Test_AutoSimcraft:
                                        html_path,
                                        duration,
                                        output)
-        print(type(res._payload[0]))
-        print(dir(res._payload[0]))
-        print(vars(res._payload[0]))
-        assert res.preamble == expected
         assert res['Subject'] == subj
         assert res['To'] == dest_addr
-        assert res['From'] == from_addr
-        htmlp = res._payload[0]
-        assert htmlp._charset == 'utf-8'
-        assert b64decode(htmlp._payload) == htmlcontent
+        assert res['From'] == 'AutoSimcraft <{f}>'.format(f=from_addr)
+        assert res._payload[0]._payload == expected
+        #assert res._payload[1]._payload == htmlcontent
+        assert b64decode(res._payload[1]._payload) == htmlcontent
         file_handle = mock_open.return_value.__enter__.return_value
         assert mock_open.call_args_list == [call('/path/to/file.html', 'r')]
         assert file_handle.read.call_count == 1
 
     def test_send_local(self, mock_ns):
         """ send_local() test """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         with nested(
                 patch('autosimcraft.autosimcraft.smtplib.SMTP', autospec=True),
         ) as (mock_smtp, ):
@@ -962,7 +964,7 @@ class Test_AutoSimcraft:
 
     def test_send_gmail(self, mock_ns):
         """ send_gmail() test """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         settings = Container()
         setattr(settings, 'GMAIL_USERNAME', 'myusername')
         setattr(settings, 'GMAIL_PASSWORD', 'mypassword')
@@ -980,13 +982,13 @@ class Test_AutoSimcraft:
 
     def test_make_char_name(self, mock_ns):
         """ make_character_name() tests """
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         assert s.make_character_name('n', 'r') == 'n@r'
         assert s.make_character_name('MyName', 'MyRealm') == 'MyName@MyRealm'
         assert s.make_character_name('sómÊñámé', 'Area 52') == 'sómÊñámé@Area52'
         
     @freeze_time("2014-01-01 01:02:03")
     def test_now(self, mock_ns):
-        bn, rc, mocklog, s, conn, lcc, wcc = mock_ns
+        bn, rc, mocklog, s, conn, lcc = mock_ns
         result = s.now()
         assert result == datetime.datetime(2014, 1, 1, 1, 2, 3)
