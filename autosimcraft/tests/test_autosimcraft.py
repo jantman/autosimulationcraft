@@ -42,12 +42,14 @@ import pytest
 import logging
 from mock import MagicMock, call, patch, Mock, mock_open
 import sys
+import os
 import datetime
 from copy import deepcopy
 import subprocess
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from base64 import b64decode
+import pickle
 
 from freezegun import freeze_time
 import battlenet
@@ -224,19 +226,12 @@ class Test_AutoSimcraft:
     def test_import_from_path_py27(self, mock_ns):
         """ test import_from_path() under py27 """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        # this is a bit of a hack...
-        settings_mock = Mock()
-        imp_mock = Mock()
-        ls_mock = Mock()
-        ls_mock.return_value = settings_mock
-        imp_mock.load_source = ls_mock
-        sys.modules['imp'] = imp_mock
-        with patch('autosimcraft.autosimcraft.imp', imp_mock):
-            s.import_from_path('foobar')
-            assert s.settings == settings_mock
-        assert call('importing foobar - <py33') in mocklog.debug.call_args_list
-        assert ls_mock.call_args_list == [call('settings', 'foobar')]
+        fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fixtures', 'importtest.py')
+        s.import_from_path(fpath)
+        assert call('importing {c} - <py33'.format(c=fpath)) in mocklog.debug.call_args_list
         assert call('imported settings module') in mocklog.debug.call_args_list
+        assert s.settings.FOO == 'bar'
+        assert s.settings.BAZ == ['blam', 'blarg']
 
     @pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
     def test_import_from_path_py33(self, mock_ns):
