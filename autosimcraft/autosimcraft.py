@@ -235,6 +235,7 @@ class AutoSimcraft:
                 self.do_character(cname, char, changes)
             else:
                 self.logger.info("Character {c} has no changes, skipping.".format(c=cname))
+            self.character_cache[cname] = bnet_info
             self.write_character_cache()
         self.logger.info("Done with all characters.")
 
