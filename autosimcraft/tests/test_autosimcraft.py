@@ -318,8 +318,10 @@ class Test_AutoSimcraft:
         bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
+        ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
         setattr(s, 'settings', s_container)
+        setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with nested(
                 patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
@@ -330,22 +332,25 @@ class Test_AutoSimcraft:
         ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
             mock_chc.return_value = 'foo'
             mock_validate.return_value = True
-            mock_get_bnet.return_value = {}
+            mock_get_bnet.return_value = {'foo': 'bar'}
             s.run()
         assert mocklog.debug.call_args_list == [call("Doing character: nameone@realmone")]
         assert mock_validate.call_args_list == [call(chars[0])]
         assert mock_get_bnet.call_args_list == [call('realmone', 'nameone')]
         assert mock_do_char.call_args_list == [call('nameone@realmone', chars[0], 'foo')]
-        assert mock_chc.call_args_list == [call('nameone@realmone', {})]
+        assert mock_chc.call_args_list == [call('nameone@realmone', {'foo': 'bar'})]
         assert mock_wcc.call_args_list == [call()]
+        assert ccache == {'nameone@realmone': {'foo': 'bar'}}
 
     def test_run_invalid_character(self, mock_ns):
         """ test run() with an invalid character """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
+        ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
         setattr(s, 'settings', s_container)
+        setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with nested(
                 patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
@@ -365,14 +370,17 @@ class Test_AutoSimcraft:
         assert mock_do_char.call_args_list == []
         assert mock_chc.call_args_list == []
         assert mock_wcc.call_args_list == []
+        assert ccache == {}
 
     def test_run_no_battlenet(self, mock_ns):
         """ test run() with character not found on battlenet """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
+        ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
         setattr(s, 'settings', s_container)
+        setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with nested(
                 patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
@@ -392,14 +400,17 @@ class Test_AutoSimcraft:
         assert mock_do_char.call_args_list == []
         assert mock_chc.call_args_list == []
         assert mock_wcc.call_args_list == []
+        assert ccache == {}
 
     def test_run_not_updated(self, mock_ns):
         """ test run() with no updates to character """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
         s_container = Container()
+        ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
         setattr(s, 'settings', s_container)
+        setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with nested(
                 patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
@@ -410,14 +421,15 @@ class Test_AutoSimcraft:
         ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
             mock_chc.return_value = None
             mock_validate.return_value = True
-            mock_get_bnet.return_value = {}
+            mock_get_bnet.return_value = {'foo': 'bar'}
             s.run()
         assert mocklog.debug.call_args_list == [call("Doing character: nameone@realmone")]
         assert mock_validate.call_args_list == [call(chars[0])]
         assert mock_get_bnet.call_args_list == [call('realmone', 'nameone')]
         assert mock_do_char.call_args_list == []
-        assert mock_chc.call_args_list == [call('nameone@realmone', {})]
+        assert mock_chc.call_args_list == [call('nameone@realmone', {'foo': 'bar'})]
         assert mock_wcc.call_args_list == [call()]
+        assert ccache == {'nameone@realmone': {'foo': 'bar'}}
 
     def test_get_battlenet(self, mock_ns, mock_bnet_character):
         """ test get_battlenet() """
