@@ -2,7 +2,7 @@ from setuptools import setup
 from sys import version_info
 from autosimcraft.version import VERSION
 
-if sys.version_info[0] > 2 or sys.version_info[1] < 7:
+if version_info[0] > 2 or version_info[1] < 7:
     raise SystemExit("ERROR - autosimcraft currently only works with python 2.7; this should be fixed soon.")
 
 with open('README.rst') as file:
