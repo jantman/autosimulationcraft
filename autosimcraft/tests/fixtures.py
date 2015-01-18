@@ -58,6 +58,7 @@ def mock_ns():
     bn.return_value = conn
     rc = Mock()
     lc = Mock()
+    wc = Mock()
     mocklog = MagicMock(spec_set=logging.Logger)
     def mock_ap_se(p):
         return p
@@ -67,13 +68,14 @@ def mock_ns():
             patch('autosimcraft.autosimcraft.battlenet.Connection', bn),
             patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc),
             patch('autosimcraft.autosimcraft.AutoSimcraft.load_character_cache', lc),
+            patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache', wc),
             patch('autosimcraft.autosimcraft.os.path.expanduser'),
             patch('autosimcraft.autosimcraft.os.path.abspath'),
-    ) as (bnp, rcp, lcc, mock_eu, mock_ap):
+    ) as (bnp, rcp, lcc, wcc, mock_eu, mock_ap):
         mock_ap.side_effect = mock_ap_se
         mock_eu.side_effect = mock_eu_se
         s = autosimcraft.AutoSimcraft(verbose=2, logger=mocklog)
-    return (bn, rc, mocklog, s, conn, lcc)
+    return (bn, rc, mocklog, s, conn, lcc, wcc)
 
 @pytest.fixture
 def mock_bnet_character(bnet_data):

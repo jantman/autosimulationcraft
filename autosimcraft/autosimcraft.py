@@ -76,6 +76,10 @@ import getpass
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from email.utils import formatdate
+from email.utils import make_msgid
+from email.utils import formataddr
 
 if sys.version_info[0] > 3 or ( sys.version_info[0] == 3 and sys.version_info[1] >= 3):
     import importlib.machinery
@@ -232,6 +236,7 @@ class AutoSimcraft:
             else:
                 self.logger.info("Character {c} has no changes, skipping.".format(c=cname))
         self.logger.info("Done with all characters.")
+        self.write_character_cache()
 
     def make_character_name(self, name, realm):
         realm = realm.replace(' ', '')
@@ -375,13 +380,15 @@ class AutoSimcraft:
                               v=self.VERSION)
         msg = MIMEMultipart()
         msg['Subject'] = subj
-        msg['From'] = from_addr
+        msg['From'] = formataddr(('AutoSimcraft', from_addr))
         msg['To'] = dest_addr
+        msg['Date'] = formatdate(localtime=True)
+        msg['Message-Id'] = make_msgid()
         bodyMIME = MIMEText(body, 'plain')
         msg.attach(bodyMIME)
         with open(html_path, 'r') as fh:
             html = fh.read()
-        html_att = MIMEText(html, 'html', 'utf-8')
+        html_att = MIMEApplication(html)
         html_att.add_header('Content-Disposition', 'attachment', filename=os.path.basename(html_path))
         msg.attach(html_att)
         return msg
