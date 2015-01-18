@@ -41,7 +41,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 import pytest
 import logging
 from mock import MagicMock, call, patch, Mock, mock_open
-from contextlib import nested
 import sys
 import datetime
 from copy import deepcopy
@@ -69,10 +68,8 @@ class Test_AutoSimcraft:
         """ test SimpleScript.init() """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.battlenet.Connection', bn),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc)
-        ):
+        with patch('autosimcraft.autosimcraft.battlenet.Connection', bn), \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc):
             s = autosimcraft.AutoSimcraft(dry_run=False,
                                                  verbose=0,
                                                  confdir='~/.autosimcraft'
@@ -88,10 +85,8 @@ class Test_AutoSimcraft:
         m = MagicMock(spec_set=logging.Logger)
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.battlenet.Connection', bn),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc)
-        ):
+        with patch('autosimcraft.autosimcraft.battlenet.Connection', bn), \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc):
             s = autosimcraft.AutoSimcraft(logger=m)
         assert s.logger == m
 
@@ -99,10 +94,8 @@ class Test_AutoSimcraft:
         """ test SimpleScript.init() with dry_run=True """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.battlenet.Connection', bn),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc)
-        ):
+        with patch('autosimcraft.autosimcraft.battlenet.Connection', bn), \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc):
             s = autosimcraft.AutoSimcraft(dry_run=True)
         assert s.dry_run is True
 
@@ -110,10 +103,8 @@ class Test_AutoSimcraft:
         """ test SimpleScript.init() with verbose=1 """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.battlenet.Connection', bn),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc)
-        ):
+        with patch('autosimcraft.autosimcraft.battlenet.Connection', bn), \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc):
             s = autosimcraft.AutoSimcraft(verbose=1)
         assert s.logger.level == logging.INFO
 
@@ -121,21 +112,17 @@ class Test_AutoSimcraft:
         """ test SimpleScript.init() with verbose=2 """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.battlenet.Connection', bn),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc)
-        ):
+        with patch('autosimcraft.autosimcraft.battlenet.Connection', bn), \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc):
             s = autosimcraft.AutoSimcraft(verbose=2)
         assert s.logger.level == logging.DEBUG
 
     def test_read_config_missing(self, mock_ns):
         """ test read_config() when settings file is missing """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.import_from_path'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.validate_config'),
-        ) as (mock_path_exists, mock_import, mock_validate):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_path_exists, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.import_from_path') as mock_import, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.validate_config') as mock_validate:
             mock_path_exists.return_value = False
             with pytest.raises(SystemExit) as excinfo:
                 s.read_config('/foo')
@@ -152,11 +139,9 @@ class Test_AutoSimcraft:
         setattr(mock_settings, 'CHARACTERS', [])
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(s, 'settings', mock_settings)
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.import_from_path'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.validate_config'),
-        ) as (mock_path_exists, mock_import, mock_validate):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_path_exists, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.import_from_path') as mock_import, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.validate_config') as mock_validate:
             mock_path_exists.return_value = True
             s.read_config('/foo')
         assert call('Reading configuration from: /foo/settings.py') in mocklog.debug.call_args_list
@@ -167,10 +152,8 @@ class Test_AutoSimcraft:
     def test_genconfig(self):
         """ test gen_config() """
         cd = '/foo'
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.open', create=True)
-        ) as (mock_pe, mock_open):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_pe, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=file)
             mock_pe.return_value = True
             autosimcraft.AutoSimcraft.gen_config(cd)
@@ -181,11 +164,9 @@ class Test_AutoSimcraft:
     def test_genconfig_nodir(self):
         """ test gen_config() with config directory missing """
         cd = '/foo'
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.os.mkdir'),
-                patch('autosimcraft.autosimcraft.open', create=True)
-        ) as (mock_pe, mock_mkdir, mock_open):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_pe, \
+             patch('autosimcraft.autosimcraft.os.mkdir') as mock_mkdir, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=file)
             mock_pe.return_value = False
             autosimcraft.AutoSimcraft.gen_config(cd)
@@ -271,7 +252,6 @@ class Test_AutoSimcraft:
         importlib_mock = Mock()
         autosimcraft.sys.modules['importlib'] = importlib_mock
         sys.modules['importlib.machinery'] = machinery_mock
-        
         with patch('autosimcraft.autosimcraft.importlib.machinery', machinery_mock):
             s.import_from_path('foobar')
             assert s.settings == settings_mock
@@ -323,13 +303,11 @@ class Test_AutoSimcraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character') as mock_validate, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet') as mock_get_bnet, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.do_character') as mock_do_char, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes') as mock_chc, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = 'foo'
             mock_validate.return_value = True
             mock_get_bnet.return_value = {'foo': 'bar'}
@@ -352,13 +330,11 @@ class Test_AutoSimcraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character') as mock_validate, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet') as mock_get_bnet, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.do_character') as mock_do_char, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes') as mock_chc, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = None
             mock_validate.return_value = False
             mock_get_bnet.return_value = {}
@@ -382,13 +358,11 @@ class Test_AutoSimcraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character') as mock_validate, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet') as mock_get_bnet, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.do_character') as mock_do_char, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes') as mock_chc, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache') as mock_wcc:
             mock_validate.return_value = True
             mock_get_bnet.return_value = None
             mock_chc.return_value = True
@@ -412,13 +386,11 @@ class Test_AutoSimcraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.do_character'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache'),
-        ) as (mock_validate, mock_get_bnet, mock_do_char, mock_chc, mock_wcc):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.validate_character') as mock_validate, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.get_battlenet') as mock_get_bnet, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.do_character') as mock_do_char, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.character_has_changes') as mock_chc, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = None
             mock_validate.return_value = True
             mock_get_bnet.return_value = {'foo': 'bar'}
@@ -477,10 +449,8 @@ class Test_AutoSimcraft:
         """ test load_character_cache() on nonexistent file """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         mocko = mock_open()
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.open', mocko, create=True),
-        ) as (mock_fexist, m):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_fexist, \
+             patch('autosimcraft.autosimcraft.open', mocko, create=True) as m:
             mock_fexist.return_value = False
             res = s.load_character_cache()
         assert mocko.mock_calls == []
@@ -490,11 +460,9 @@ class Test_AutoSimcraft:
     def test_load_char_cache(self, mock_ns):
         """ test load_character_cache() """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.open', create=True),
-                patch('autosimcraft.autosimcraft.pickle.load')
-        ) as (mock_fexist, mocko, mock_pkl):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_fexist, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mocko, \
+             patch('autosimcraft.autosimcraft.pickle.load') as mock_pkl:
             mock_fexist.return_value = True
             mocko.return_value = 'filecontents'
             mock_pkl.return_value = 'unpickled'
@@ -509,10 +477,8 @@ class Test_AutoSimcraft:
         bn, rc, mocklog, s, conn, lcc = mock_ns
         cache_content = {"foo": "bar", "baz": 3}
         openmock = MagicMock()
-        with nested(
-                patch('autosimcraft.autosimcraft.open', create=True),
-                patch('autosimcraft.autosimcraft.pickle.dump')
-        ) as (mocko, mock_pkl):
+        with patch('autosimcraft.autosimcraft.open', create=True) as mocko, \
+             patch('autosimcraft.autosimcraft.pickle.dump') as mock_pkl:
             mocko.return_value = openmock
             s.character_cache = deepcopy(cache_content)
             s.write_character_cache()
@@ -604,14 +570,12 @@ class Test_AutoSimcraft:
             return datetime.datetime(2014, 1, 1, 1, 2, 3)
         def mock_ope_se(p):
             return False
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.open', create=True),
-                patch('autosimcraft.autosimcraft.os.chdir'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.now'),
-                patch('autosimcraft.autosimcraft.subprocess.check_output'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email'),
-        ) as (mock_ope, mocko, mock_chdir, mock_dtnow, mock_subp, mock_sce):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_ope, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mocko, \
+             patch('autosimcraft.autosimcraft.os.chdir') as mock_chdir, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.now') as mock_dtnow, \
+             patch('autosimcraft.autosimcraft.subprocess.check_output') as mock_subp, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = mock_dtnow_se
             s.settings = settings
@@ -635,15 +599,12 @@ class Test_AutoSimcraft:
         
         def mock_ope_se(p):
             return True
-
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.open', create=True),
-                patch('autosimcraft.autosimcraft.os.chdir'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.now'),
-                patch('autosimcraft.autosimcraft.subprocess.check_output'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email'),
-        ) as (mock_ope, mocko, mock_chdir, mock_dtnow, mock_subp, mock_sce):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_ope, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mocko, \
+             patch('autosimcraft.autosimcraft.os.chdir') as mock_chdir, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.now') as mock_dtnow, \
+             patch('autosimcraft.autosimcraft.subprocess.check_output') as mock_subp, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = [datetime.datetime(2014, 1, 1, 0, 0, 0), datetime.datetime(2014, 1, 1, 1, 2, 3)]
             mock_subp.return_value = 'subprocessoutput'
@@ -681,14 +642,12 @@ class Test_AutoSimcraft:
         def mock_ope_se(p):
             return True
 
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.open', create=True),
-                patch('autosimcraft.autosimcraft.os.chdir'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.now'),
-                patch('autosimcraft.autosimcraft.subprocess.check_output'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email'),
-        ) as (mock_ope, mocko, mock_chdir, mock_dtnow, mock_subp, mock_sce):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_ope, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mocko, \
+             patch('autosimcraft.autosimcraft.os.chdir') as mock_chdir, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.now') as mock_dtnow, \
+             patch('autosimcraft.autosimcraft.subprocess.check_output') as mock_subp, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = [datetime.datetime(2014, 1, 1, 0, 0, 0), datetime.datetime(2014, 1, 1, 1, 2, 3)]
             mock_subp.side_effect = subprocess.CalledProcessError(1, 'command', 'erroroutput')
@@ -723,14 +682,12 @@ class Test_AutoSimcraft:
                 return False
             return True
 
-        with nested(
-                patch('autosimcraft.autosimcraft.os.path.exists'),
-                patch('autosimcraft.autosimcraft.open', create=True),
-                patch('autosimcraft.autosimcraft.os.chdir'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.now'),
-                patch('autosimcraft.autosimcraft.subprocess.check_output'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email'),
-        ) as (mock_ope, mocko, mock_chdir, mock_dtnow, mock_subp, mock_sce):
+        with patch('autosimcraft.autosimcraft.os.path.exists') as mock_ope, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mocko, \
+             patch('autosimcraft.autosimcraft.os.chdir') as mock_chdir, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.now') as mock_dtnow, \
+             patch('autosimcraft.autosimcraft.subprocess.check_output') as mock_subp, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = [datetime.datetime(2014, 1, 1, 0, 0, 0), datetime.datetime(2014, 1, 1, 1, 2, 3)]
             mock_subp.return_value = 'simcoutput'
@@ -763,14 +720,11 @@ class Test_AutoSimcraft:
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_local'),
-                patch('autosimcraft.autosimcraft.platform.node'),
-                patch('autosimcraft.autosimcraft.getpass.getuser'),
-
-        ) as (mock_gmail, mock_format, mock_local, mock_node, mock_user):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail') as mock_gmail, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_local') as mock_local, \
+             patch('autosimcraft.autosimcraft.platform.node') as mock_node, \
+             patch('autosimcraft.autosimcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -809,13 +763,11 @@ class Test_AutoSimcraft:
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_local'),
-                patch('autosimcraft.autosimcraft.platform.node'),
-                patch('autosimcraft.autosimcraft.getpass.getuser'),
-        ) as (mock_gmail, mock_format, mock_local, mock_node, mock_user):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail') as mock_gmail, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_local') as mock_local, \
+             patch('autosimcraft.autosimcraft.platform.node') as mock_node, \
+             patch('autosimcraft.autosimcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -856,13 +808,11 @@ class Test_AutoSimcraft:
         setattr(settings, 'CHARACTERS', [c_settings])
         setattr(settings, 'GMAIL_USERNAME', 'gmailuser')
         setattr(settings, 'GMAIL_PASSWORD', 'gmailpass')
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_local'),
-                patch('autosimcraft.autosimcraft.platform.node'),
-                patch('autosimcraft.autosimcraft.getpass.getuser'),
-        ) as (mock_gmail, mock_format, mock_local, mock_node, mock_user):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail') as mock_gmail, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_local') as mock_local, \
+             patch('autosimcraft.autosimcraft.platform.node') as mock_node, \
+             patch('autosimcraft.autosimcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -901,13 +851,11 @@ class Test_AutoSimcraft:
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        with nested(
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.send_local'),
-                patch('autosimcraft.autosimcraft.platform.node'),
-                patch('autosimcraft.autosimcraft.getpass.getuser'),
-        ) as (mock_gmail, mock_format, mock_local, mock_node, mock_user):
+        with patch('autosimcraft.autosimcraft.AutoSimcraft.send_gmail') as mock_gmail, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.send_local') as mock_local, \
+             patch('autosimcraft.autosimcraft.platform.node') as mock_node, \
+             patch('autosimcraft.autosimcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.as_string.return_value = 'msgbody'
@@ -943,13 +891,11 @@ class Test_AutoSimcraft:
         expected += '. (Note that you likely need to save the HTML attachment to disk and'
         expected += ' view it from there; it will not render correctly in most email clients.)\n\n'
         expected += 'This run was done on nodename at 2014-01-01 00:00:00 by autosimcraft.py va.b.c'
-        with nested(
-                patch('autosimcraft.autosimcraft.platform.node'),
-                patch('autosimcraft.autosimcraft.AutoSimcraft.now'),
-                patch('autosimcraft.autosimcraft.open', create=True),
-                patch('autosimcraft.autosimcraft.make_msgid'),
-                patch('autosimcraft.autosimcraft.formatdate'),
-        ) as (mock_node, mock_now, mock_open, mock_msgid, mock_date):
+        with patch('autosimcraft.autosimcraft.platform.node') as mock_node, \
+             patch('autosimcraft.autosimcraft.AutoSimcraft.now') as mock_now, \
+             patch('autosimcraft.autosimcraft.open', create=True) as mock_open, \
+             patch('autosimcraft.autosimcraft.make_msgid') as mock_msgid, \
+             patch('autosimcraft.autosimcraft.formatdate') as mock_date:
             mock_msgid.return_value = 'mymessageid'
             mock_date.return_value = 'mydate'
             mock_node.return_value = 'nodename'
@@ -985,9 +931,7 @@ class Test_AutoSimcraft:
     def test_send_local(self, mock_ns):
         """ send_local() test """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        with nested(
-                patch('autosimcraft.autosimcraft.smtplib.SMTP', autospec=True),
-        ) as (mock_smtp, ):
+        with patch('autosimcraft.autosimcraft.smtplib.SMTP', autospec=True) as mock_smtp:
             s.send_local('from', 'to', 'msg')
         assert mock_smtp.mock_calls == [call('localhost'),
                                         call().sendmail('from', ['to'], 'msg'),
@@ -1000,9 +944,7 @@ class Test_AutoSimcraft:
         settings = Container()
         setattr(settings, 'GMAIL_USERNAME', 'myusername')
         setattr(settings, 'GMAIL_PASSWORD', 'mypassword')
-        with nested(
-                patch('autosimcraft.autosimcraft.smtplib.SMTP', autospec=True),
-        ) as (mock_smtp, ):
+        with patch('autosimcraft.autosimcraft.smtplib.SMTP', autospec=True) as mock_smtp:
             s.settings = settings
             s.send_gmail('from', 'to', 'msg')
         assert mock_smtp.mock_calls == [call('smtp.gmail.com:587'),

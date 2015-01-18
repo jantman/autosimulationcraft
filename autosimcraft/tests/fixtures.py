@@ -42,7 +42,6 @@ import pytest
 from mock import MagicMock, call, patch, Mock, mock_open
 import battlenet
 import logging
-from contextlib import nested
 from autosimcraft import autosimcraft
 
 
@@ -64,13 +63,11 @@ def mock_ns():
         return p
     def mock_eu_se(p):
         return p.replace('~/', '/home/user/')
-    with nested(
-            patch('autosimcraft.autosimcraft.battlenet.Connection', bn),
-            patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc),
-            patch('autosimcraft.autosimcraft.AutoSimcraft.load_character_cache', lc),
-            patch('autosimcraft.autosimcraft.os.path.expanduser'),
-            patch('autosimcraft.autosimcraft.os.path.abspath'),
-    ) as (bnp, rcp, lcc, mock_eu, mock_ap):
+    with patch('autosimcraft.autosimcraft.battlenet.Connection', bn) as bnp, \
+         patch('autosimcraft.autosimcraft.AutoSimcraft.read_config', rc) as rcp, \
+         patch('autosimcraft.autosimcraft.AutoSimcraft.load_character_cache', lc) as lcc, \
+         patch('autosimcraft.autosimcraft.os.path.expanduser') as mock_eu, \
+         patch('autosimcraft.autosimcraft.os.path.abspath') as mock_ap:
         mock_ap.side_effect = mock_ap_se
         mock_eu.side_effect = mock_eu_se
         s = autosimcraft.AutoSimcraft(verbose=2, logger=mocklog)

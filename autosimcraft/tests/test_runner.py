@@ -38,7 +38,6 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-from contextlib import nested
 from mock import patch, call
 import pytest
 
@@ -57,10 +56,8 @@ def test_parse_argv():
 
 def test_console_entry_genconfig():
     """ test console_entry_point() with --genconfig """
-    with nested(
-            patch('autosimcraft.runner.parse_args'),
-            patch('autosimcraft.autosimcraft.AutoSimcraft.gen_config'),
-    ) as (mock_parse_args, mock_gen_config):
+    with patch('autosimcraft.runner.parse_args') as mock_parse_args, \
+         patch('autosimcraft.autosimcraft.AutoSimcraft.gen_config') as mock_gen_config:
         args = Container()
         setattr(args, 'genconfig', True)
         setattr(args, 'confdir', '/foo/bar')
@@ -72,10 +69,8 @@ def test_console_entry_genconfig():
 
 def test_console_entry():
     """ test console_entry_point() """
-    with nested(
-            patch('autosimcraft.runner.parse_args'),
-            patch('autosimcraft.runner.AutoSimcraft', autospec=True),
-    ) as (mock_parse_args, mock_AS):
+    with patch('autosimcraft.runner.parse_args') as mock_parse_args, \
+         patch('autosimcraft.runner.AutoSimcraft', autospec=True) as mock_AS:
         args = Container()
         setattr(args, 'genconfig', False)
         setattr(args, 'confdir', '/foo/bar')
