@@ -925,8 +925,12 @@ class Test_AutoSimcraft:
         with nested(
                 patch('autosimcraft.autosimcraft.platform.node'),
                 patch('autosimcraft.autosimcraft.AutoSimcraft.now'),
-                patch('autosimcraft.autosimcraft.open', create=True)
-        ) as (mock_node, mock_now, mock_open):
+                patch('autosimcraft.autosimcraft.open', create=True),
+                patch('autosimcraft.autosimcraft.make_msgid'),
+                patch('autosimcraft.autosimcraft.formatdate'),
+        ) as (mock_node, mock_now, mock_open, mock_msgid, mock_date):
+            mock_msgid.return_value = 'mymessageid'
+            mock_date.return_value = 'mydate'
             mock_node.return_value = 'nodename'
             mock_now.return_value = datetime.datetime(2014, 1, 1, 0, 0, 0)
             mock_open.return_value = MagicMock(spec=file)
@@ -943,12 +947,16 @@ class Test_AutoSimcraft:
         assert res['Subject'] == subj
         assert res['To'] == dest_addr
         assert res['From'] == 'AutoSimcraft <{f}>'.format(f=from_addr)
+        assert res['Date'] == 'mydate'
+        assert res['Message-Id'] == 'mymessageid'
         assert res._payload[0]._payload == expected
-        #assert res._payload[1]._payload == htmlcontent
         assert b64decode(res._payload[1]._payload) == htmlcontent
+        assert ('Content-Disposition', 'attachment; filename="file.html"') in res._payload[1]._headers
         file_handle = mock_open.return_value.__enter__.return_value
         assert mock_open.call_args_list == [call('/path/to/file.html', 'r')]
         assert file_handle.read.call_count == 1
+        assert mock_date.call_args_list == [call(localtime=True)]
+        assert mock_msgid.call_args_list == [call()]
 
     def test_send_local(self, mock_ns):
         """ send_local() test """
