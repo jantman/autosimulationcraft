@@ -7,8 +7,8 @@ autosimcraft
 .. image:: https://pypip.in/d/autosimcraft/badge.png
    :target: https://crate.io/packages/autosimcraft
 
-.. image:: https://landscape.io/github/jantman/autosimcraft/landscape/landscape.svg
-   :target: https://landscape.io/github/jantman/autosimcraft/landscape
+.. image:: https://landscape.io/github/jantman/autosimcraft/master/landscape.svg
+   :target: https://landscape.io/github/jantman/autosimcraft/master
    :alt: Code Health
 
 .. image:: https://secure.travis-ci.org/jantman/autosimcraft.png?branch=master
