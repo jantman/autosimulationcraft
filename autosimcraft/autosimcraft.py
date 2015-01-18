@@ -356,7 +356,7 @@ class AutoSimcraft:
         if type(emails) == type(""):
             emails = [emails]
         from_addr = getpass.getuser() + '@' + platform.node()
-        subj = 'SimulationCraft output for {c}'.format(c=c_name)
+        subj = 'SimulationCraft report for {c}'.format(c=c_name)
         for dest_addr in emails:
             self.logger.info("Sending email for character {c} to {e}".format(c=c_name, e=dest_addr))
             if self.dry_run:
@@ -375,7 +375,6 @@ class AutoSimcraft:
         body += 'The run was completed in {d} and the HTML report is attached'.format(d=duration)
         body += '. (Note that you likely need to save the HTML attachment to disk and'
         body += ' view it from there; it will not render correctly in most email clients.)\n\n'
-        body += 'SimulationCraft output: \n\n{o}\n\n'.format(o=output)
         footer = 'This run was done on {h} at {t} by autosimcraft.py v{v}'
         body += footer.format(h=platform.node(),
                               t=self.now(),
@@ -391,8 +390,11 @@ class AutoSimcraft:
         with open(html_path, 'r') as fh:
             html = fh.read()
         html_att = MIMEApplication(html)
-        html_att.add_header('Content-Disposition', 'attachment', filename=os.path.basename(html_path))
+        html_att.add_header('Content-Disposition', 'attachment', filename=(c_name + '.html'))
         msg.attach(html_att)
+        output_att = MIMEApplication(output)
+        output_att.add_header('Content-Disposition', 'attachment', filename=(c_name + '_simc_output.txt'))
+        msg.attach(output_att)
         return msg
         
     def send_gmail(self, from_addr, dest, msg_s):

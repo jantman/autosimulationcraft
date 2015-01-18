@@ -747,7 +747,7 @@ class Test_AutoSimcraft:
         html_path = '/path/to/output.html'
         duration = datetime.timedelta(seconds=3723)  # 1h 2m 3s
         output = 'simc_output_string'
-        subj = 'SimulationCraft output for cname@rname'
+        subj = 'SimulationCraft report for cname@rname'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
@@ -793,7 +793,7 @@ class Test_AutoSimcraft:
         html_path = '/path/to/output.html'
         duration = datetime.timedelta(seconds=3723)  # 1h 2m 3s
         output = 'simc_output_string'
-        subj = 'SimulationCraft output for cname@rname'
+        subj = 'SimulationCraft report for cname@rname'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
@@ -838,7 +838,7 @@ class Test_AutoSimcraft:
         html_path = '/path/to/output.html'
         duration = datetime.timedelta(seconds=3723)  # 1h 2m 3s
         output = 'simc_output_string'
-        subj = 'SimulationCraft output for cname@rname'
+        subj = 'SimulationCraft report for cname@rname'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
@@ -885,7 +885,7 @@ class Test_AutoSimcraft:
         html_path = '/path/to/output.html'
         duration = datetime.timedelta(seconds=3723)  # 1h 2m 3s
         output = 'simc_output_string'
-        subj = 'SimulationCraft output for cname@rname'
+        subj = 'SimulationCraft report for cname@rname'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
@@ -930,7 +930,6 @@ class Test_AutoSimcraft:
         expected += 'The run was completed in 1:02:03 and the HTML report is attached'
         expected += '. (Note that you likely need to save the HTML attachment to disk and'
         expected += ' view it from there; it will not render correctly in most email clients.)\n\n'
-        expected += 'SimulationCraft output: \n\nsimcoutput\n\n'
         expected += 'This run was done on nodename at 2014-01-01 00:00:00 by autosimcraft.py va.b.c'
         with nested(
                 patch('autosimcraft.autosimcraft.platform.node'),
@@ -961,7 +960,10 @@ class Test_AutoSimcraft:
         assert res['Message-Id'] == 'mymessageid'
         assert res._payload[0]._payload == expected
         assert b64decode(res._payload[1]._payload) == htmlcontent
-        assert ('Content-Disposition', 'attachment; filename="file.html"') in res._payload[1]._headers
+        assert ('Content-Disposition', 'attachment; filename="cname@rname.html"') in res._payload[1]._headers
+        assert b64decode(res._payload[2]._payload) == output
+        assert ('Content-Disposition', 'attachment; filename="cname@rname_simc_output.txt"') in res._payload[2]._headers
+        assert len(res._payload) == 3
         file_handle = mock_open.return_value.__enter__.return_value
         assert mock_open.call_args_list == [call('/path/to/file.html', 'r')]
         assert file_handle.read.call_count == 1
