@@ -72,13 +72,13 @@ class Test_AutoSimulationCraft:
         with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
                 patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(dry_run=False,
-                                                 verbose=0,
-                                                 confdir='~/.autosimulationcraft'
-                                             )
+                                                        verbose=0,
+                                                        confdir='~/.autosimulationcraft'
+                                                        )
         assert bn.mock_calls == [call()]
         assert rc.call_args_list == [call('~/.autosimulationcraft')]
         assert s.dry_run is False
-        assert type(s.logger) == logging.Logger
+        assert isinstance(s.logger, logging.Logger)
         assert s.logger.level == logging.NOTSET
 
     def test_init_logger(self):
@@ -128,10 +128,12 @@ class Test_AutoSimulationCraft:
             with pytest.raises(SystemExit) as excinfo:
                 s.read_config('/foo')
             assert excinfo.value.code == 1
-        assert call('Reading configuration from: /foo/settings.py') in mocklog.debug.call_args_list
+        assert call(
+            'Reading configuration from: /foo/settings.py') in mocklog.debug.call_args_list
         assert mock_import.call_count == 0
         assert mock_path_exists.call_count == 1
-        assert mocklog.error.call_args_list == [call("ERROR - configuration file does not exist. Please run with --genconfig to generate an example one.")]
+        assert mocklog.error.call_args_list == [
+            call("ERROR - configuration file does not exist. Please run with --genconfig to generate an example one.")]
 
     def test_read_config(self, mock_ns):
         """ test read_config() working correctly """
@@ -145,11 +147,12 @@ class Test_AutoSimulationCraft:
                 patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_config') as mock_validate:
             mock_path_exists.return_value = True
             s.read_config('/foo')
-        assert call('Reading configuration from: /foo/settings.py') in mocklog.debug.call_args_list
+        assert call(
+            'Reading configuration from: /foo/settings.py') in mocklog.debug.call_args_list
         assert mock_import.call_args_list == [call('/foo/settings.py')]
         assert mock_path_exists.call_count == 1
         assert mock_validate.call_args_list == [call()]
-        
+
     def test_genconfig(self):
         """ test gen_config() """
         cd = '/foo'
@@ -185,7 +188,8 @@ class Test_AutoSimulationCraft:
         with pytest.raises(SystemExit) as excinfo:
             res = s.validate_config()
         assert excinfo.value.code == 1
-        assert mocklog.error.call_args_list == [call("ERROR: Settings file must define CHARACTERS list")]
+        assert mocklog.error.call_args_list == [
+            call("ERROR: Settings file must define CHARACTERS list")]
 
     def test_validate_config_characters_not_list(self, mock_ns):
         """ test validate_config() if CHARACTERS is not a list """
@@ -197,7 +201,8 @@ class Test_AutoSimulationCraft:
         with pytest.raises(SystemExit) as excinfo:
             res = s.validate_config()
         assert excinfo.value.code == 1
-        assert mocklog.error.call_args_list == [call("ERROR: Settings file must define CHARACTERS list")]
+        assert mocklog.error.call_args_list == [
+            call("ERROR: Settings file must define CHARACTERS list")]
 
     def test_validate_config_characters_empty(self, mock_ns):
         """ test validate_config() if CHARACTERS is an empty list """
@@ -209,7 +214,8 @@ class Test_AutoSimulationCraft:
         with pytest.raises(SystemExit) as excinfo:
             res = s.validate_config()
         assert excinfo.value.code == 1
-        assert mocklog.error.call_args_list == [call("ERROR: Settings file must define CHARACTERS list with at least one character")]
+        assert mocklog.error.call_args_list == [
+            call("ERROR: Settings file must define CHARACTERS list with at least one character")]
 
     def test_validate_config_ok(self, mock_ns):
         """ test validate_config() with good config """
@@ -221,18 +227,24 @@ class Test_AutoSimulationCraft:
         res = s.validate_config()
         assert mocklog.error.call_args_list == []
 
-    @pytest.mark.skipif(sys.version_info >= (3,3), reason="requires python < 3.3")
+    @pytest.mark.skipif(
+        sys.version_info >= (3, 3), reason="requires python < 3.3")
     def test_import_from_path_py27(self, mock_ns):
         """ test import_from_path() under py27 """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        fpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fixtures', 'importtest.py')
+        fpath = os.path.join(
+            os.path.dirname(
+                os.path.realpath(__file__)),
+            'fixtures',
+            'importtest.py')
         s.import_from_path(fpath)
-        assert call('importing {c} - <py33'.format(c=fpath)) in mocklog.debug.call_args_list
+        assert call(
+            'importing {c} - <py33'.format(c=fpath)) in mocklog.debug.call_args_list
         assert call('imported settings module') in mocklog.debug.call_args_list
         assert s.settings.FOO == 'bar'
         assert s.settings.BAZ == ['blam', 'blarg']
 
-    @pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
+    @pytest.mark.skipif(sys.version_info < (3, 3), reason="requires python3.3")
     def test_import_from_path_py33(self, mock_ns):
         """ test import_from_path() under py33 """
         bn, rc, mocklog, s, conn, lcc = mock_ns
@@ -266,7 +278,8 @@ class Test_AutoSimulationCraft:
         char = 'realm'
         mocklog.debug.reset_mock()
         result = s.validate_character(char)
-        assert mocklog.debug.call_args_list == [call('Character is not a dict')]
+        assert mocklog.debug.call_args_list == [
+            call('Character is not a dict')]
         assert result is False
 
     def test_validate_character_no_realm(self, mock_ns):
@@ -275,7 +288,8 @@ class Test_AutoSimulationCraft:
         char = {'name': 'cname'}
         mocklog.debug.reset_mock()
         result = s.validate_character(char)
-        assert mocklog.debug.call_args_list == [call("'realm' not in char dict")]
+        assert mocklog.debug.call_args_list == [
+            call("'realm' not in char dict")]
         assert result is False
 
     def test_validate_character_no_char(self, mock_ns):
@@ -284,13 +298,16 @@ class Test_AutoSimulationCraft:
         char = {'realm': 'rname'}
         mocklog.debug.reset_mock()
         result = s.validate_character(char)
-        assert mocklog.debug.call_args_list == [call("'name' not in char dict")]
+        assert mocklog.debug.call_args_list == [
+            call("'name' not in char dict")]
         assert result is False
 
     def test_run(self, mock_ns):
         """ test run() in ideal/working situation """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
+        chars = [{'name': 'nameone',
+                  'realm': 'realmone',
+                  'email': 'foo@example.com'}]
         s_container = Container()
         ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
@@ -306,18 +323,28 @@ class Test_AutoSimulationCraft:
             mock_validate.return_value = True
             mock_get_bnet.return_value = {'foo': 'bar'}
             s.run()
-        assert mocklog.debug.call_args_list == [call("Doing character: nameone@realmone")]
+        assert mocklog.debug.call_args_list == [
+            call("Doing character: nameone@realmone")]
         assert mock_validate.call_args_list == [call(chars[0])]
         assert mock_get_bnet.call_args_list == [call('realmone', 'nameone')]
-        assert mock_do_char.call_args_list == [call('nameone@realmone', chars[0], 'foo')]
-        assert mock_chc.call_args_list == [call('nameone@realmone', {'foo': 'bar'})]
+        assert mock_do_char.call_args_list == [
+            call(
+                'nameone@realmone',
+                chars[0],
+                'foo')]
+        assert mock_chc.call_args_list == [
+            call(
+                'nameone@realmone', {
+                    'foo': 'bar'})]
         assert mock_wcc.call_args_list == [call()]
         assert ccache == {'nameone@realmone': {'foo': 'bar'}}
 
     def test_run_invalid_character(self, mock_ns):
         """ test run() with an invalid character """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
+        chars = [{'name': 'nameone',
+                  'realm': 'realmone',
+                  'email': 'foo@example.com'}]
         s_container = Container()
         ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
@@ -333,10 +360,12 @@ class Test_AutoSimulationCraft:
             mock_validate.return_value = False
             mock_get_bnet.return_value = {}
             s.run()
-        assert mocklog.debug.call_args_list == [call("Doing character: nameone@realmone")]
+        assert mocklog.debug.call_args_list == [
+            call("Doing character: nameone@realmone")]
         assert mock_validate.call_args_list == [call(chars[0])]
         assert mock_get_bnet.call_args_list == []
-        assert mocklog.warning.call_args_list == [call("Character configuration not valid, skipping: nameone@realmone")]
+        assert mocklog.warning.call_args_list == [
+            call("Character configuration not valid, skipping: nameone@realmone")]
         assert mock_do_char.call_args_list == []
         assert mock_chc.call_args_list == []
         assert mock_wcc.call_args_list == []
@@ -345,7 +374,9 @@ class Test_AutoSimulationCraft:
     def test_run_no_battlenet(self, mock_ns):
         """ test run() with character not found on battlenet """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
+        chars = [{'name': 'nameone',
+                  'realm': 'realmone',
+                  'email': 'foo@example.com'}]
         s_container = Container()
         ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
@@ -353,18 +384,20 @@ class Test_AutoSimulationCraft:
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_validate.return_value = True
             mock_get_bnet.return_value = None
             mock_chc.return_value = True
             s.run()
-        assert mocklog.debug.call_args_list == [call("Doing character: nameone@realmone")]
+        assert mocklog.debug.call_args_list == [
+            call("Doing character: nameone@realmone")]
         assert mock_validate.call_args_list == [call(chars[0])]
         assert mock_get_bnet.call_args_list == [call('realmone', 'nameone')]
-        assert mocklog.warning.call_args_list == [call("Character nameone@realmone not found on battlenet; skipping.")]
+        assert mocklog.warning.call_args_list == [
+            call("Character nameone@realmone not found on battlenet; skipping.")]
         assert mock_do_char.call_args_list == []
         assert mock_chc.call_args_list == []
         assert mock_wcc.call_args_list == []
@@ -373,7 +406,9 @@ class Test_AutoSimulationCraft:
     def test_run_not_updated(self, mock_ns):
         """ test run() with no updates to character """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        chars = [{'name': 'nameone', 'realm': 'realmone', 'email': 'foo@example.com'}]
+        chars = [{'name': 'nameone',
+                  'realm': 'realmone',
+                  'email': 'foo@example.com'}]
         s_container = Container()
         ccache = {}
         setattr(s_container, 'CHARACTERS', chars)
@@ -381,19 +416,23 @@ class Test_AutoSimulationCraft:
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = None
             mock_validate.return_value = True
             mock_get_bnet.return_value = {'foo': 'bar'}
             s.run()
-        assert mocklog.debug.call_args_list == [call("Doing character: nameone@realmone")]
+        assert mocklog.debug.call_args_list == [
+            call("Doing character: nameone@realmone")]
         assert mock_validate.call_args_list == [call(chars[0])]
         assert mock_get_bnet.call_args_list == [call('realmone', 'nameone')]
         assert mock_do_char.call_args_list == []
-        assert mock_chc.call_args_list == [call('nameone@realmone', {'foo': 'bar'})]
+        assert mock_chc.call_args_list == [
+            call(
+                'nameone@realmone', {
+                    'foo': 'bar'})]
         assert mock_wcc.call_args_list == [call()]
         assert ccache == {'nameone@realmone': {'foo': 'bar'}}
 
@@ -403,13 +442,14 @@ class Test_AutoSimulationCraft:
         conn.get_character.return_value = mock_bnet_character
         result = s.get_battlenet('rname', 'cname')
         assert conn.get_character.call_args_list == [call(battlenet.UNITED_STATES,
-                                                 'rname',
-                                                 'cname'
-                                                 )
-        ]
-        for i in ['connection', 'achievementPoints', 'lastModified', '_items', 'achievement_points']:
+                                                          'rname',
+                                                          'cname'
+                                                          )
+                                                     ]
+        for i in ['connection', 'achievementPoints',
+                  'lastModified', '_items', 'achievement_points']:
             assert i not in result
-        assert result['stats']['spellCrit'] == 12.5        
+        assert result['stats']['spellCrit'] == 12.5
         assert 'recipes' not in result['professions']['primary'][0]
         assert result['name'] == 'Jantman'
         assert result['level'] == 100
@@ -418,13 +458,14 @@ class Test_AutoSimulationCraft:
                                                        u'rank': 627,
                                                        u'id': 197,
                                                        u'icon': u'trade_tailoring'
-        }
+                                                       }
         assert result['realm'] == 'Area 52'
         assert result['class'] == 9
         assert result['race'] == 5
         assert result['stats']['critRating'] == 825
         assert result['items']['shoulder']['id'] == 115997
-        assert result['talents'][0]['talents'][0]['spell']['name'] == u'Soul Leech'
+        assert result['talents'][0]['talents'][
+            0]['spell']['name'] == u'Soul Leech'
 
     def test_get_battlenet_badchar(self, mock_ns, mock_bnet_character):
         """ test get_battlenet() with character not found """
@@ -432,38 +473,44 @@ class Test_AutoSimulationCraft:
         conn.get_character.side_effect = battlenet.exceptions.CharacterNotFound()
         result = s.get_battlenet('rname', 'cname')
         assert conn.get_character.call_args_list == [call(battlenet.UNITED_STATES,
-                                                 'rname',
-                                                 'cname'
-                                                 )
-        ]
+                                                          'rname',
+                                                          'cname'
+                                                          )
+                                                     ]
         assert result is None
-        assert mocklog.error.call_args_list == [call("ERROR - Character Not Found - realm='rname' character='cname'")]
+        assert mocklog.error.call_args_list == [
+            call("ERROR - Character Not Found - realm='rname' character='cname'")]
 
     def test_load_char_cache_noexist(self, mock_ns):
         """ test load_character_cache() on nonexistent file """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         mocko = mock_open()
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_fexist, \
-             patch('autosimulationcraft.autosimulationcraft.open', mocko, create=True) as m:
+                patch('autosimulationcraft.autosimulationcraft.open', mocko, create=True) as m:
             mock_fexist.return_value = False
             res = s.load_character_cache()
         assert mocko.mock_calls == []
-        assert mock_fexist.call_args_list == [call('/home/user/.autosimulationcraft/characters.pkl')]
+        assert mock_fexist.call_args_list == [
+            call('/home/user/.autosimulationcraft/characters.pkl')]
         assert res == {}
 
     def test_load_char_cache(self, mock_ns):
         """ test load_character_cache() """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_fexist, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-             patch('autosimulationcraft.autosimulationcraft.pickle.load') as mock_pkl:
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.pickle.load') as mock_pkl:
             mock_fexist.return_value = True
             mocko.return_value = 'filecontents'
             mock_pkl.return_value = 'unpickled'
             res = s.load_character_cache()
-        assert mocko.mock_calls == [call('/home/user/.autosimulationcraft/characters.pkl', 'rb')]
+        assert mocko.mock_calls == [
+            call(
+                '/home/user/.autosimulationcraft/characters.pkl',
+                'rb')]
         assert mock_pkl.mock_calls == [call('filecontents')]
-        assert mock_fexist.call_args_list == [call('/home/user/.autosimulationcraft/characters.pkl')]
+        assert mock_fexist.call_args_list == [
+            call('/home/user/.autosimulationcraft/characters.pkl')]
         assert res == 'unpickled'
 
     def test_write_char_cache(self, mock_ns):
@@ -472,14 +519,17 @@ class Test_AutoSimulationCraft:
         cache_content = {"foo": "bar", "baz": 3}
         openmock = MagicMock()
         with patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-             patch('autosimulationcraft.autosimulationcraft.pickle.dump') as mock_pkl:
+                patch('autosimulationcraft.autosimulationcraft.pickle.dump') as mock_pkl:
             mocko.return_value = openmock
             s.character_cache = deepcopy(cache_content)
             s.write_character_cache()
         assert mocko.mock_calls == [call('/home/user/.autosimulationcraft/characters.pkl', 'wb'),
                                     call().__enter__(),
                                     call().__exit__(None, None, None)]
-        assert mock_pkl.mock_calls == [call(cache_content, openmock.__enter__())]
+        assert mock_pkl.mock_calls == [
+            call(
+                cache_content,
+                openmock.__enter__())]
 
     def test_char_has_changes_true(self, mock_ns, char_data):
         """ test character_has_changes() with changes """
@@ -488,7 +538,23 @@ class Test_AutoSimulationCraft:
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {cname: orig_data}
         new_data = deepcopy(orig_data)
-        new_data['items']['shoulder'] = {u'stats': [{u'stat': 59, u'amount': 60}, {u'stat': 32, u'amount': 80}, {u'stat': 5, u'amount': 109}, {u'stat': 7, u'amount': 163}], u'name': u'Mantle of Hooded Nightmares of the Savage', u'tooltipParams': {}, u'armor': 60, u'quality': 3, u'itemLevel': 615, u'context': u'dungeon-normal', u'bonusLists': [83], u'id': 114395, u'icon': u'inv_cloth_draenordungeon_c_01shoulder'}
+        new_data['items']['shoulder'] = {u'stats': [{u'stat': 59,
+                                                     u'amount': 60},
+                                                    {u'stat': 32,
+                                                     u'amount': 80},
+                                                    {u'stat': 5,
+                                                     u'amount': 109},
+                                                    {u'stat': 7,
+                                                     u'amount': 163}],
+                                         u'name': u'Mantle of Hooded Nightmares of the Savage',
+                                         u'tooltipParams': {},
+                                         u'armor': 60,
+                                         u'quality': 3,
+                                         u'itemLevel': 615,
+                                         u'context': u'dungeon-normal',
+                                         u'bonusLists': [83],
+                                         u'id': 114395,
+                                         u'icon': u'inv_cloth_draenordungeon_c_01shoulder'}
         s.character_cache = ccache
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_diff') as mock_char_diff:
             mock_char_diff.return_value = 'foobar'
@@ -502,7 +568,23 @@ class Test_AutoSimulationCraft:
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {cname: char_data}
         new_data = deepcopy(char_data)
-        new_data['items']['shoulder'] = {u'stats': [{u'stat': 59, u'amount': 60}, {u'stat': 32, u'amount': 80}, {u'stat': 5, u'amount': 109}, {u'stat': 7, u'amount': 163}], u'name': u'Mantle of Hooded Nightmares of the Savage', u'tooltipParams': {}, u'armor': 60, u'quality': 3, u'itemLevel': 615, u'context': u'dungeon-normal', u'bonusLists': [83], u'id': 114395, u'icon': u'inv_cloth_draenordungeon_c_01shoulder'}
+        new_data['items']['shoulder'] = {u'stats': [{u'stat': 59,
+                                                     u'amount': 60},
+                                                    {u'stat': 32,
+                                                     u'amount': 80},
+                                                    {u'stat': 5,
+                                                     u'amount': 109},
+                                                    {u'stat': 7,
+                                                     u'amount': 163}],
+                                         u'name': u'Mantle of Hooded Nightmares of the Savage',
+                                         u'tooltipParams': {},
+                                         u'armor': 60,
+                                         u'quality': 3,
+                                         u'itemLevel': 615,
+                                         u'context': u'dungeon-normal',
+                                         u'bonusLists': [83],
+                                         u'id': 114395,
+                                         u'icon': u'inv_cloth_draenordungeon_c_01shoulder'}
         s.character_cache = ccache
         result = s.character_diff(char_data, new_data)
         expected = ["change items.shoulder.context from raid-finder to dungeon-normal",
@@ -551,25 +633,30 @@ class Test_AutoSimulationCraft:
         """ test do_character() with SIMC_PATH non-existant """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
-        c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com']}
         c_diff = 'diffcontent'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        
+
         first_dt = False
+
         def mock_dtnow_se(*args, **kwargs):
             if first_dt:
                 return datetime.datetime(2014, 1, 1, 0, 0, 0)
             return datetime.datetime(2014, 1, 1, 1, 2, 3)
+
         def mock_ope_se(p):
             return False
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-             patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-             patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = mock_dtnow_se
             s.settings = settings
@@ -579,47 +666,63 @@ class Test_AutoSimulationCraft:
         assert mock_chdir.call_args_list == []
         assert mock_subp.call_args_list == []
         assert mock_sce.call_args_list == []
-        assert mocklog.error.call_args_list == [call('ERROR: simc path /path/to/simc does not exist')]
+        assert mocklog.error.call_args_list == [
+            call('ERROR: simc path /path/to/simc does not exist')]
 
     def test_do_character(self, mock_ns):
         """ test do_character() in normal case """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
-        c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com']}
         c_diff = 'diffcontent'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        
+
         def mock_ope_se(p):
             return True
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-             patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-             patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
-            mock_dtnow.side_effect = [datetime.datetime(2014, 1, 1, 0, 0, 0), datetime.datetime(2014, 1, 1, 1, 2, 3)]
+            mock_dtnow.side_effect = [
+                datetime.datetime(
+                    2014, 1, 1, 0, 0, 0), datetime.datetime(
+                    2014, 1, 1, 1, 2, 3)]
             mock_subp.return_value = 'subprocessoutput'
             s.settings = settings
             s.do_character(c_name, c_settings, c_diff)
-        assert mock_ope.call_args_list == [call('/path/to/simc'), call('/home/user/.autosimulationcraft/cname@rname.html')]
+        assert mock_ope.call_args_list == [
+            call('/path/to/simc'),
+            call('/home/user/.autosimulationcraft/cname@rname.html')]
         assert mocko.mock_calls == [call('/home/user/.autosimulationcraft/cname@rname.simc', 'w'),
                                     call().__enter__(),
-                                    call().__enter__().write('"armory=us,rname,cname"\n'),
-                                    call().__enter__().write('calculate_scale_factors=1\n'),
-                                    call().__enter__().write('html=cname@rname.html'),
+                                    call().__enter__().write(
+                                        '"armory=us,rname,cname"\n'),
+                                    call().__enter__().write(
+                                        'calculate_scale_factors=1\n'),
+                                    call().__enter__().write(
+                                        'html=cname@rname.html'),
                                     call().__exit__(None, None, None)]
-        assert mock_chdir.call_args_list == [call('/home/user/.autosimulationcraft')]
+        assert mock_chdir.call_args_list == [
+            call('/home/user/.autosimulationcraft')]
         assert mock_subp.call_args_list == [call(['/path/to/simc',
                                                   '/home/user/.autosimulationcraft/cname@rname.simc'],
                                                  stderr=subprocess.STDOUT)]
         assert mock_sce.call_args_list == [call('cname@rname',
-                                                {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']},
+                                                {'realm': 'rname',
+                                                 'name': 'cname',
+                                                 'email': ['foo@example.com']},
                                                 'diffcontent',
                                                 '/home/user/.autosimulationcraft/cname@rname.html',
-                                                datetime.timedelta(seconds=3723),
+                                                datetime.timedelta(
+                                                    seconds=3723),
                                                 'subprocessoutput')]
         assert mocklog.error.call_args_list == []
 
@@ -627,34 +730,47 @@ class Test_AutoSimulationCraft:
         """ test do_character() with simc exiting non-0 """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
-        c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com']}
         c_diff = 'diffcontent'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        
+
         def mock_ope_se(p):
             return True
 
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-             patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-             patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
-            mock_dtnow.side_effect = [datetime.datetime(2014, 1, 1, 0, 0, 0), datetime.datetime(2014, 1, 1, 1, 2, 3)]
-            mock_subp.side_effect = subprocess.CalledProcessError(1, 'command', 'erroroutput')
+            mock_dtnow.side_effect = [
+                datetime.datetime(
+                    2014, 1, 1, 0, 0, 0), datetime.datetime(
+                    2014, 1, 1, 1, 2, 3)]
+            mock_subp.side_effect = subprocess.CalledProcessError(
+                1,
+                'command',
+                'erroroutput')
             s.settings = settings
             s.do_character(c_name, c_settings, c_diff)
         assert mock_ope.call_args_list == [call('/path/to/simc')]
         assert mocko.mock_calls == [call('/home/user/.autosimulationcraft/cname@rname.simc', 'w'),
                                     call().__enter__(),
-                                    call().__enter__().write('"armory=us,rname,cname"\n'),
-                                    call().__enter__().write('calculate_scale_factors=1\n'),
-                                    call().__enter__().write('html=cname@rname.html'),
+                                    call().__enter__().write(
+                                        '"armory=us,rname,cname"\n'),
+                                    call().__enter__().write(
+                                        'calculate_scale_factors=1\n'),
+                                    call().__enter__().write(
+                                        'html=cname@rname.html'),
                                     call().__exit__(None, None, None)]
-        assert mock_chdir.call_args_list == [call('/home/user/.autosimulationcraft')]
+        assert mock_chdir.call_args_list == [
+            call('/home/user/.autosimulationcraft')]
         assert mock_subp.call_args_list == [call(['/path/to/simc',
                                                   '/home/user/.autosimulationcraft/cname@rname.simc'],
                                                  stderr=subprocess.STDOUT)]
@@ -665,46 +781,62 @@ class Test_AutoSimulationCraft:
         """ do_character() - simc runs but HTML not created """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         c_name = 'cname@rname'
-        c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com']}
         c_diff = 'diffcontent'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        
+
         def mock_ope_se(p):
             if p == '/home/user/.autosimulationcraft/cname@rname.html':
                 return False
             return True
 
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-             patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-             patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
-            mock_dtnow.side_effect = [datetime.datetime(2014, 1, 1, 0, 0, 0), datetime.datetime(2014, 1, 1, 1, 2, 3)]
+            mock_dtnow.side_effect = [
+                datetime.datetime(
+                    2014, 1, 1, 0, 0, 0), datetime.datetime(
+                    2014, 1, 1, 1, 2, 3)]
             mock_subp.return_value = 'simcoutput'
             s.settings = settings
             s.do_character(c_name, c_settings, c_diff)
-        assert mock_ope.call_args_list == [call('/path/to/simc'), call('/home/user/.autosimulationcraft/cname@rname.html')]
+        assert mock_ope.call_args_list == [
+            call('/path/to/simc'),
+            call('/home/user/.autosimulationcraft/cname@rname.html')]
         assert mocko.mock_calls == [call('/home/user/.autosimulationcraft/cname@rname.simc', 'w'),
                                     call().__enter__(),
-                                    call().__enter__().write('"armory=us,rname,cname"\n'),
-                                    call().__enter__().write('calculate_scale_factors=1\n'),
-                                    call().__enter__().write('html=cname@rname.html'),
+                                    call().__enter__().write(
+                                        '"armory=us,rname,cname"\n'),
+                                    call().__enter__().write(
+                                        'calculate_scale_factors=1\n'),
+                                    call().__enter__().write(
+                                        'html=cname@rname.html'),
                                     call().__exit__(None, None, None)]
-        assert mock_chdir.call_args_list == [call('/home/user/.autosimulationcraft')]
+        assert mock_chdir.call_args_list == [
+            call('/home/user/.autosimulationcraft')]
         assert mock_subp.call_args_list == [call(['/path/to/simc',
                                                   '/home/user/.autosimulationcraft/cname@rname.simc'],
                                                  stderr=subprocess.STDOUT)]
         assert mock_sce.call_args_list == []
-        assert mocklog.error.call_args_list == [call('ERROR: simc finished but HTML file not found on disk.')]
+        assert mocklog.error.call_args_list == [
+            call('ERROR: simc finished but HTML file not found on disk.')]
 
     def test_send_char_email(self, mock_ns):
         """ test send_char_email() in normal case """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        c_settings = {'realm': 'rname', 'name': 'cname', 'email': ['foo@example.com']}
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com']}
         c_name = 'cname@rname'
         c_diff = 'diffcontent'
         html_path = '/path/to/output.html'
@@ -715,10 +847,10 @@ class Test_AutoSimulationCraft:
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-             patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-             patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -758,10 +890,10 @@ class Test_AutoSimulationCraft:
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-             patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-             patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -803,10 +935,10 @@ class Test_AutoSimulationCraft:
         setattr(settings, 'GMAIL_USERNAME', 'gmailuser')
         setattr(settings, 'GMAIL_PASSWORD', 'gmailpass')
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-             patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-             patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -846,10 +978,10 @@ class Test_AutoSimulationCraft:
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-             patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-             patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.as_string.return_value = 'msgbody'
@@ -861,8 +993,10 @@ class Test_AutoSimulationCraft:
                               html_path,
                               duration,
                               output)
-        assert mocklog.info.call_args_list == [call("Sending email for character cname@rname to foo@example.com")]
-        assert mocklog.warning.call_args_list == [call("DRY RUN - not actually sending email")]
+        assert mocklog.info.call_args_list == [
+            call("Sending email for character cname@rname to foo@example.com")]
+        assert mocklog.warning.call_args_list == [
+            call("DRY RUN - not actually sending email")]
         assert mock_format.call_args_list == []
         assert mock_local.call_args_list == []
         assert mock_gmail.call_args_list == []
@@ -886,10 +1020,10 @@ class Test_AutoSimulationCraft:
         expected += ' view it from there; it will not render correctly in most email clients.)\n\n'
         expected += 'This run was done on nodename at 2014-01-01 00:00:00 by autosimulationcraft.py va.b.c'
         with patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_now, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open, \
-             patch('autosimulationcraft.autosimulationcraft.make_msgid') as mock_msgid, \
-             patch('autosimulationcraft.autosimulationcraft.formatdate') as mock_date:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_now, \
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open, \
+                patch('autosimulationcraft.autosimulationcraft.make_msgid') as mock_msgid, \
+                patch('autosimulationcraft.autosimulationcraft.formatdate') as mock_date:
             mock_msgid.return_value = 'mymessageid'
             mock_date.return_value = 'mydate'
             mock_node.return_value = 'nodename'
@@ -912,9 +1046,13 @@ class Test_AutoSimulationCraft:
         assert res['Message-Id'] == 'mymessageid'
         assert res._payload[0]._payload == expected
         assert b64decode(res._payload[1]._payload) == htmlcontent
-        assert ('Content-Disposition', 'attachment; filename="cname@rname.html"') in res._payload[1]._headers
+        assert (
+            'Content-Disposition',
+            'attachment; filename="cname@rname.html"') in res._payload[1]._headers
         assert b64decode(res._payload[2]._payload) == output
-        assert ('Content-Disposition', 'attachment; filename="cname@rname_simc_output.txt"') in res._payload[2]._headers
+        assert (
+            'Content-Disposition',
+            'attachment; filename="cname@rname_simc_output.txt"') in res._payload[2]._headers
         assert len(res._payload) == 3
         file_handle = mock_open.return_value.__enter__.return_value
         assert mock_open.call_args_list == [call('/path/to/file.html', 'r')]
@@ -930,7 +1068,7 @@ class Test_AutoSimulationCraft:
         assert mock_smtp.mock_calls == [call('localhost'),
                                         call().sendmail('from', ['to'], 'msg'),
                                         call().quit()
-        ]
+                                        ]
 
     def test_send_gmail(self, mock_ns):
         """ send_gmail() test """
@@ -943,9 +1081,11 @@ class Test_AutoSimulationCraft:
             s.send_gmail('from', 'to', 'msg')
         assert mock_smtp.mock_calls == [call('smtp.gmail.com:587'),
                                         call().starttls(),
-                                        call().login('myusername', 'mypassword'),
-                                        call().sendmail('from', ['to'], 'msg'),
-                                        call().quit()
+                                        call().login(
+            'myusername',
+            'mypassword'),
+            call().sendmail('from', ['to'], 'msg'),
+            call().quit()
         ]
 
     def test_make_char_name(self, mock_ns):
@@ -953,8 +1093,10 @@ class Test_AutoSimulationCraft:
         bn, rc, mocklog, s, conn, lcc = mock_ns
         assert s.make_character_name('n', 'r') == 'n@r'
         assert s.make_character_name('MyName', 'MyRealm') == 'MyName@MyRealm'
-        assert s.make_character_name('sómÊñámé', 'Area 52') == 'sómÊñámé@Area52'
-        
+        assert s.make_character_name(
+            'sómÊñámé',
+            'Area 52') == 'sómÊñámé@Area52'
+
     @freeze_time("2014-01-01 01:02:03")
     def test_now(self, mock_ns):
         bn, rc, mocklog, s, conn, lcc = mock_ns
