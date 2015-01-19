@@ -57,7 +57,10 @@ Requirements
 ------------
 
 * A working installation of `SimulationCraft <http://simulationcraft.org/>`_ with (at least) the command line portion.
-* Python 2.7+ (currently tested with 2.7, 3.2, 3.3, 3.4)
+* Python __2.7__ - The upstream library that I chose to use for the BattleNet API only works with python2. As is the case
+  with all of my current code, I target 2.7 through current (3.4) for development, as the effort to get code that also works with
+  `horribly ancient <https://wiki.python.org/moin/Python2orPython3>`_ 2.6 isn't worth it. I've cut a branch to start work on solving
+  this problem. Until then, 2.7 is it. Sorry.
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 
 Installation
@@ -119,10 +122,7 @@ Guidelines
 ----------
 
 * pep8 compliant with some exceptions (see pytest.ini)
-* 100% test coverage with pytest (with valid tests) (note that until
-  https://github.com/lemurheavy/coveralls-public/issues/31 is fixed, you
-  need to check the ``cov`` output for branch coverage, coveralls can't
-  be relied on).
+* 100% test coverage with pytest (with valid tests)
 
 Testing
 -------
