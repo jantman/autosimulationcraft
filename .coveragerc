@@ -1,7 +1,7 @@
 [run]
 branch = True
 omit = lib/*
-       autosimcraft/tests/*
+       autosimulationcraft/tests/*
        setup.py
 
 [report]

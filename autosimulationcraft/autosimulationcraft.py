@@ -11,7 +11,7 @@ What It Does
 For each character defined in the configuration file:
 
 - uses [battlenet](https://pypi.python.org/pypi/battlenet/0.2.6) to check your
-  character's gear, and cache it locally (under `~/.autosimcraft/`). If your
+  character's gear, and cache it locally (under `~/.autosimulationcraft/`). If your
   gear has not changed since the last run, skip the character.
 - Generate a new `.simc` file for the character, using current armory information
   and any options you specified.
@@ -29,7 +29,7 @@ You can install these like:
 Configuration
 --------------
 
-`~/.autosimcraft/settings.py` is just Python code that will be imported by
+`~/.autosimulationcraft/settings.py` is just Python code that will be imported by
 this script. If it doesn't already exist when this script runs, the script
 will exit telling you about an option to create an example config.
 
@@ -50,7 +50,7 @@ Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 Free for any use provided that patches are submitted back to me.
 
 The canonical, current version of this script will always be available at:
-<https://github.com/jantman/misc-scripts/blob/master/autosimcraft.py>
+<https://github.com/jantman/misc-scripts/blob/master/autosimulationcraft.py>
 
 Changelog
 ----------
@@ -95,14 +95,14 @@ FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(funcName)20s() ] %(message)
 logging.basicConfig(level=logging.ERROR, format=FORMAT)
 
 
-class AutoSimcraft:
+class AutoSimulationCraft:
     """ might as well use a class. It'll make things easier later. """
 
     VERSION = '0.0.1'
     
     SAMPLE_CONF = """
     ###############################################################
-    # example autosimcraft.py configuration file
+    # example autosimulationcraft.py configuration file
     # all file paths are relative to this file
     ###############################################################
     # this is evaluated as ptrhon, so you can do whatever you want
@@ -202,7 +202,7 @@ class AutoSimcraft:
         confpath = os.path.join(dname, 'settings.py')
         if not os.path.exists(dname):
             os.mkdir(dname)
-        conf = dedent(AutoSimcraft.SAMPLE_CONF)
+        conf = dedent(AutoSimulationCraft.SAMPLE_CONF)
         with open(confpath, 'w') as fh:
             fh.write(conf)
 
@@ -376,13 +376,13 @@ class AutoSimcraft:
         body += 'The run was completed in {d} and the HTML report is attached'.format(d=duration)
         body += '. (Note that you likely need to save the HTML attachment to disk and'
         body += ' view it from there; it will not render correctly in most email clients.)\n\n'
-        footer = 'This run was done on {h} at {t} by autosimcraft.py v{v}'
+        footer = 'This run was done on {h} at {t} by autosimulationcraft.py v{v}'
         body += footer.format(h=platform.node(),
                               t=self.now(),
                               v=self.VERSION)
         msg = MIMEMultipart()
         msg['Subject'] = subj
-        msg['From'] = formataddr(('AutoSimcraft', from_addr))
+        msg['From'] = formataddr(('AutoSimulationCraft', from_addr))
         msg['To'] = dest_addr
         msg['Date'] = formatdate(localtime=True)
         msg['Message-Id'] = make_msgid()

@@ -1,22 +1,22 @@
-autosimcraft
+AutoSimulationCraft
 ========================
 
-.. image:: https://pypip.in/v/autosimcraft/badge.png
-   :target: https://crate.io/packages/autosimcraft
+.. image:: https://pypip.in/v/autosimulationcraft/badge.png
+   :target: https://crate.io/packages/autosimulationcraft
 
-.. image:: https://pypip.in/d/autosimcraft/badge.png
-   :target: https://crate.io/packages/autosimcraft
+.. image:: https://pypip.in/d/autosimulationcraft/badge.png
+   :target: https://crate.io/packages/autosimulationcraft
 
-.. image:: https://landscape.io/github/jantman/autosimcraft/master/landscape.svg
-   :target: https://landscape.io/github/jantman/autosimcraft/master
+.. image:: https://landscape.io/github/jantman/AutoSimulationCraft/master/landscape.svg
+   :target: https://landscape.io/github/jantman/AutoSimulationCraft/master
    :alt: Code Health
 
-.. image:: https://secure.travis-ci.org/jantman/autosimcraft.png?branch=master
-   :target: http://travis-ci.org/jantman/autosimcraft
+.. image:: https://secure.travis-ci.org/jantman/AutoSimulationCraft.png?branch=master
+   :target: http://travis-ci.org/jantman/AutoSimulationCraft
    :alt: travis-ci for master branch
 
-.. image:: https://codecov.io/github/jantman/autosimcraft/coverage.svg?branch=master
-   :target: https://codecov.io/github/jantman/autosimcraft?branch=master
+.. image:: https://codecov.io/github/jantman/AutoSimulationCraft/coverage.svg?branch=master
+   :target: https://codecov.io/github/jantman/AutoSimulationCraft?branch=master
    :alt: coverage report for master branch
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
@@ -73,7 +73,7 @@ system-wide, you can (using sudo).
 
 .. code-block:: bash
 
-    pip install autosimcraft
+    pip install autosimulationcraft
 
 Configuration
 -------------
@@ -82,21 +82,21 @@ Running
 
 .. code-block:: bash
 
-    autosimcraft --genconfig
+    autosimc --genconfig
 
-Will generate a default configuration file at ``~/.autosimcraft/settings.py``. Open this with your
+Will generate a default configuration file at ``~/.autosimulationcraft/settings.py``. Open this with your
 favorite text editor; the comments should be enough to help you configure it.
 
 Usage
 -----
 
-I'd recommend calling ``autosimcraft`` from cron, or some other method of running it automatically
+I'd recommend calling ``autosimc`` from cron, or some other method of running it automatically
 on a regular basis. If you want to, you _can_ run it manually.
 
 Bugs and Feature Requests
 -------------------------
 
-Bug reports and feature requests are happily accepted via the `GitHub Issue Tracker <https://github.com/jantman/autosimcraft/issues>`_. Pull requests are
+Bug reports and feature requests are happily accepted via the `GitHub Issue Tracker <https://github.com/jantman/AutoSimulationCraft/issues>`_. Pull requests are
 welcome. Issues that don't have an accompanying pull request will be worked on
 as my time and priority allows.
 
@@ -105,15 +105,15 @@ Development
 
 To install for development:
 
-1. Fork the `autosimcraft <https://github.com/jantman/autosimcraft>`_ repository on GitHub
+1. Fork the `AutoSimulationCraft <https://github.com/jantman/AutoSimulationCraft>`_ repository on GitHub
 2. Create a new branch off of master in your fork.
 
 .. code-block:: bash
 
-    $ virtualenv autosimcraft
-    $ cd autosimcraft && source bin/activate
-    $ pip install -e git+git@github.com:YOURNAME/autosimcraft.git@BRANCHNAME#egg=autosimcraft
-    $ cd src/autosimcraft
+    $ virtualenv autosimulationcraft
+    $ cd autosimulationcraft && source bin/activate
+    $ pip install -e git+git@github.com:YOURNAME/autosimulationcraft.git@BRANCHNAME#egg=autosimulationcraft
+    $ cd src/autosimulationcraft
 
 The git clone you're now in will probably be checked out to a specific commit,
 so you may want to ``git checkout BRANCHNAME``.
@@ -147,14 +147,14 @@ Release Checklist
 2. Confirm that there are CHANGES.rst entries for all major changes.
 3. Ensure that Travis tests passing in all environments.
 4. Ensure that test coverage is no less than the last release (ideally, 100%).
-5. Increment the version number in autosimcraft/version.py and add version and release date to CHANGES.rst, then push to GitHub.
+5. Increment the version number in autosimulationcraft/version.py and add version and release date to CHANGES.rst, then push to GitHub.
 6. Confirm that README.rst renders correctly on GitHub.
 7. Upload package to testpypi, confirm that README.rst renders correctly.
 
    * Make sure your ~/.pypirc file is correct
    * ``python setup.py register -r https://testpypi.python.org/pypi``
    * ``python setup.py sdist upload -r https://testpypi.python.org/pypi``
-   * Check that the README renders at https://testpypi.python.org/pypi/autosimcraft
+   * Check that the README renders at https://testpypi.python.org/pypi/autosimulationcraft
 
 8. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
 9. Tag the release in Git, push tag to GitHub:
