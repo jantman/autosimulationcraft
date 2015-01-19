@@ -20,8 +20,8 @@ autosimcraft
    :alt: coverage report for master branch
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
-   :target: http://www.repostatus.org/#active
    :alt: Project Status: Active - The project has reached a stable, usable state and is being actively developed.
+   :target: http://www.repostatus.org/#active
 
 A python script to run `SimulationCraft <http://simulationcraft.org/>`_ reports for World of Warcraft characters when their gear/stats/level/etc. changes.
 
@@ -57,10 +57,7 @@ Requirements
 ------------
 
 * A working installation of `SimulationCraft <http://simulationcraft.org/>`_ with (at least) the command line portion.
-* __Python 2.7__ - The upstream library that I chose to use for the BattleNet API only works with python2. As is the case
-  with all of my current code, I target 2.7 through current (3.4) for development, as the effort to get code that also works with
-  `horribly ancient <https://wiki.python.org/moin/Python2orPython3>`_ 2.6 isn't worth it. I've cut a branch to start work on solving
-  this problem. Until then, 2.7 is it. Sorry.
+* Python 2.7+ (currently tested with 2.7, 3.2, 3.3, 3.4)
 * Python `VirtualEnv <http://www.virtualenv.org/>`_ and ``pip`` (recommended installation method; your OS/distribution should have packages for these)
 
 Installation
