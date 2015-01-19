@@ -59,7 +59,6 @@ from data_fixtures import *
 from fixtures import *
 
 
-
 def test_default_confdir():
     assert autosimulationcraft.DEFAULT_CONFDIR == '~/.autosimulationcraft'
 
@@ -71,7 +70,7 @@ class Test_AutoSimulationCraft:
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
         with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(dry_run=False,
                                                  verbose=0,
                                                  confdir='~/.autosimulationcraft'
@@ -88,7 +87,7 @@ class Test_AutoSimulationCraft:
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
         with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(logger=m)
         assert s.logger == m
 
@@ -97,7 +96,7 @@ class Test_AutoSimulationCraft:
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
         with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(dry_run=True)
         assert s.dry_run is True
 
@@ -106,7 +105,7 @@ class Test_AutoSimulationCraft:
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
         with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(verbose=1)
         assert s.logger.level == logging.INFO
 
@@ -115,7 +114,7 @@ class Test_AutoSimulationCraft:
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
         with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(verbose=2)
         assert s.logger.level == logging.DEBUG
 
@@ -123,8 +122,8 @@ class Test_AutoSimulationCraft:
         """ test read_config() when settings file is missing """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_path_exists, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.import_from_path') as mock_import, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_config') as mock_validate:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.import_from_path') as mock_import, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_config') as mock_validate:
             mock_path_exists.return_value = False
             with pytest.raises(SystemExit) as excinfo:
                 s.read_config('/foo')
@@ -142,8 +141,8 @@ class Test_AutoSimulationCraft:
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(s, 'settings', mock_settings)
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_path_exists, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.import_from_path') as mock_import, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_config') as mock_validate:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.import_from_path') as mock_import, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_config') as mock_validate:
             mock_path_exists.return_value = True
             s.read_config('/foo')
         assert call('Reading configuration from: /foo/settings.py') in mocklog.debug.call_args_list
@@ -155,7 +154,7 @@ class Test_AutoSimulationCraft:
         """ test gen_config() """
         cd = '/foo'
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_pe, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open:
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=file)
             mock_pe.return_value = True
             autosimulationcraft.AutoSimulationCraft.gen_config(cd)
@@ -167,8 +166,8 @@ class Test_AutoSimulationCraft:
         """ test gen_config() with config directory missing """
         cd = '/foo'
         with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_pe, \
-             patch('autosimulationcraft.autosimulationcraft.os.mkdir') as mock_mkdir, \
-             patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open:
+                patch('autosimulationcraft.autosimulationcraft.os.mkdir') as mock_mkdir, \
+                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=file)
             mock_pe.return_value = False
             autosimulationcraft.AutoSimulationCraft.gen_config(cd)
@@ -299,10 +298,10 @@ class Test_AutoSimulationCraft:
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = 'foo'
             mock_validate.return_value = True
             mock_get_bnet.return_value = {'foo': 'bar'}
@@ -326,10 +325,10 @@ class Test_AutoSimulationCraft:
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
         with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = None
             mock_validate.return_value = False
             mock_get_bnet.return_value = {}

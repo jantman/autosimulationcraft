@@ -39,7 +39,7 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 """
 
 import pytest
-from mock import MagicMock, call, patch, Mock, mock_open
+from mock import MagicMock, patch, Mock
 import battlenet
 import logging
 from autosimulationcraft import autosimulationcraft
@@ -57,21 +57,24 @@ def mock_ns():
     bn.return_value = conn
     rc = Mock()
     lc = Mock()
-    wc = Mock()
     mocklog = MagicMock(spec_set=logging.Logger)
+
     def mock_ap_se(p):
         return p
+
     def mock_eu_se(p):
         return p.replace('~/', '/home/user/')
-    with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn) as bnp, \
-         patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc) as rcp, \
-         patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.load_character_cache', lc) as lcc, \
-         patch('autosimulationcraft.autosimulationcraft.os.path.expanduser') as mock_eu, \
-         patch('autosimulationcraft.autosimulationcraft.os.path.abspath') as mock_ap:
+
+    with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
+            patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc), \
+            patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.load_character_cache', lc) as lcc, \
+            patch('autosimulationcraft.autosimulationcraft.os.path.expanduser') as mock_eu, \
+            patch('autosimulationcraft.autosimulationcraft.os.path.abspath') as mock_ap:
         mock_ap.side_effect = mock_ap_se
         mock_eu.side_effect = mock_eu_se
         s = autosimulationcraft.AutoSimulationCraft(verbose=2, logger=mocklog)
     return (bn, rc, mocklog, s, conn, lcc)
+
 
 @pytest.fixture
 def mock_bnet_character(bnet_data):
