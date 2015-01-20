@@ -11,7 +11,7 @@ What It Does
 For each character defined in the configuration file:
 
 - uses [battlenet](https://pypi.python.org/pypi/battlenet/0.2.6) to check your
-  character's gear, and cache it locally (under `~/.autosimcraft/`). If your
+  character's gear, and cache it locally (under `~/.autosimulationcraft/`). If your
   gear has not changed since the last run, skip the character.
 - Generate a new `.simc` file for the character, using current armory information
   and any options you specified.
@@ -29,7 +29,7 @@ You can install these like:
 Configuration
 --------------
 
-`~/.autosimcraft/settings.py` is just Python code that will be imported by
+`~/.autosimulationcraft/settings.py` is just Python code that will be imported by
 this script. If it doesn't already exist when this script runs, the script
 will exit telling you about an option to create an example config.
 
@@ -50,7 +50,7 @@ Copyright 2015 Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 Free for any use provided that patches are submitted back to me.
 
 The canonical, current version of this script will always be available at:
-<https://github.com/jantman/misc-scripts/blob/master/autosimcraft.py>
+<https://github.com/jantman/misc-scripts/blob/master/autosimulationcraft.py>
 
 Changelog
 ----------
@@ -61,7 +61,6 @@ Changelog
 
 import sys
 import os
-import argparse
 import logging
 import subprocess
 import datetime
@@ -81,7 +80,7 @@ from email.utils import formatdate
 from email.utils import make_msgid
 from email.utils import formataddr
 
-if sys.version_info[0] > 3 or ( sys.version_info[0] == 3 and sys.version_info[1] >= 3):
+if sys.version_info[0] > 3 or (sys.version_info[0] == 3 and sys.version_info[1] >= 3):
     import importlib.machinery
 else:
     import imp
@@ -89,20 +88,20 @@ else:
 from dictdiffer import diff
 import battlenet
 
-from config import *
+from config import DEFAULT_CONFDIR
 
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(level=logging.ERROR, format=FORMAT)
 
 
-class AutoSimcraft:
+class AutoSimulationCraft:
     """ might as well use a class. It'll make things easier later. """
 
     VERSION = '0.0.1'
-    
+
     SAMPLE_CONF = """
     ###############################################################
-    # example autosimcraft.py configuration file
+    # example autosimulationcraft.py configuration file
     # all file paths are relative to this file
     ###############################################################
     # this is evaluated as ptrhon, so you can do whatever you want
@@ -128,7 +127,7 @@ class AutoSimcraft:
     GMAIL_USERNAME = None
     GMAIL_PASSWORD = None
     """
-    
+
     def __init__(self, confdir=DEFAULT_CONFDIR, logger=None, dry_run=False, verbose=0):
         """ init method, run at class creation """
         # setup a logger; allow an existing one to be passed in to use
@@ -165,28 +164,32 @@ class AutoSimcraft:
         confpath = os.path.abspath(os.path.expanduser(os.path.join(confdir, 'settings.py')))
         self.logger.debug("Reading configuration from: {c}".format(c=confpath))
         if not os.path.exists(confpath):
-            self.logger.error("ERROR - configuration file does not exist. Please run with --genconfig to generate an example one.")
+            self.logger.error("ERROR - configuration file does not exist. "
+                              "Please run with --genconfig to generate an example one.")
             raise SystemExit(1)
         self.import_from_path(confpath)
         self.validate_config()
-        self.logger.debug("Imported settings for {n} characters".format(n=len(self.settings.CHARACTERS)))
+        self.logger.debug("Imported settings for {n} characters".format(
+            n=len(self.settings.CHARACTERS))
+        )
 
     def validate_config(self):
         # validate config
         if not hasattr(self.settings, 'CHARACTERS'):
             self.logger.error("ERROR: Settings file must define CHARACTERS list")
             raise SystemExit(1)
-        if type(self.settings.CHARACTERS) != type([]):
+        if not isinstance(self.settings.CHARACTERS, list):
             self.logger.error("ERROR: Settings file must define CHARACTERS list")
             raise SystemExit(1)
         if len(self.settings.CHARACTERS) < 1:
-            self.logger.error("ERROR: Settings file must define CHARACTERS list with at least one character")
+            self.logger.error("ERROR: Settings file must define CHARACTERS"
+                              " list with at least one character")
             raise SystemExit(1)
         # end validate config
-        
+
     def import_from_path(self, confpath):
         """ import a module from a given filesystem path """
-        if sys.version_info[0] > 3 or ( sys.version_info[0] == 3 and sys.version_info[1] >= 3):
+        if sys.version_info[0] > 3 or (sys.version_info[0] == 3 and sys.version_info[1] >= 3):
             # py3.3+
             self.logger.debug("importing {c} - py33+".format(c=confpath))
             loader = importlib.machinery.SourceFileLoader('settings', confpath)
@@ -202,12 +205,12 @@ class AutoSimcraft:
         confpath = os.path.join(dname, 'settings.py')
         if not os.path.exists(dname):
             os.mkdir(dname)
-        conf = dedent(AutoSimcraft.SAMPLE_CONF)
+        conf = dedent(AutoSimulationCraft.SAMPLE_CONF)
         with open(confpath, 'w') as fh:
             fh.write(conf)
 
     def validate_character(self, char):
-        if type(char) != type({}):
+        if not isinstance(char, dict):
             self.logger.debug("Character is not a dict")
             return False
         if 'realm' not in char:
@@ -217,18 +220,20 @@ class AutoSimcraft:
             self.logger.debug("'name' not in char dict")
             return False
         return True
-            
+
     def run(self):
         """ do stuff here """
         for char in self.settings.CHARACTERS:
             cname = self.make_character_name(char['name'], char['realm'])
             self.logger.debug("Doing character: {c}".format(c=cname))
             if not self.validate_character(char):
-                self.logger.warning("Character configuration not valid, skipping: {c}".format(c=cname))
+                self.logger.warning("Character configuration not valid,"
+                                    " skipping: {c}".format(c=cname))
                 continue
             bnet_info = self.get_battlenet(char['realm'], char['name'])
             if bnet_info is None:
-                self.logger.warning("Character {c} not found on battlenet; skipping.".format(c=cname))
+                self.logger.warning("Character {c} not found on"
+                                    " battlenet; skipping.".format(c=cname))
                 continue
             changes = self.character_has_changes(cname, bnet_info)
             if changes is not None:
@@ -261,10 +266,12 @@ class AutoSimcraft:
             return "Character not in cache (has not been seen before)."
         c_old = self.character_cache[c_name_realm]
         if c_old == c_bnet:
-            self.logger.debug("character identical in cache and battlenet: {c}".format(c=c_name_realm))
+            self.logger.debug("character identical in cache"
+                              " and battlenet: {c}".format(c=c_name_realm))
             return None
         # else they're different
-        self.logger.debug("character has differences between cache and battlenet: {c}".format(c=c_name_realm))
+        self.logger.debug("character has differences between cache"
+                          " and battlenet: {c}".format(c=c_name_realm))
         return self.character_diff(c_old, c_bnet)
 
     def character_diff(self, old, new):
@@ -282,16 +289,16 @@ class AutoSimcraft:
         for x in sorted(list(d)):
             if x[0] == 'change':
                 s += 'change {item} from {a} to {b}\n'.format(typ=x[0],
-                                                            item=x[1],
-                                                            a=x[2][0],
-                                                            b=x[2][1])
+                                                              item=x[1],
+                                                              a=x[2][0],
+                                                              b=x[2][1])
             elif x[0] == 'remove':
                 s += 'remove {a} {b}\n'.format(a=x[1], b=x[2])
             else:
                 s += 'add {a} {b}\n'.format(a=x[1], b=x[2])
         s = s.strip()
         return s
-    
+
     def do_character(self, c_name, c_settings, c_diff):
         """
         Do the actual simc run for this character
@@ -304,7 +311,8 @@ class AutoSimcraft:
         :type c_diff: string
         """
         if not os.path.exists(self.settings.SIMC_PATH):
-            self.logger.error("ERROR: simc path {p} does not exist".format(p=self.settings.SIMC_PATH))
+            self.logger.error("ERROR: simc path {p}"
+                              " does not exist".format(p=self.settings.SIMC_PATH))
             return
         simc_file = os.path.join(self.confdir, '{c}.simc'.format(c=c_name))
         html_file = os.path.join(self.confdir, '{c}.html'.format(c=c_name))
@@ -354,35 +362,52 @@ class AutoSimcraft:
         :type output: string
         """
         emails = c_settings['email']
-        if type(emails) == type(""):
+        if isinstance(emails, str):
             emails = [emails]
         from_addr = getpass.getuser() + '@' + platform.node()
         subj = 'SimulationCraft report for {c}'.format(c=c_name)
         for dest_addr in emails:
-            self.logger.info("Sending email for character {c} to {e}".format(c=c_name, e=dest_addr))
+            self.logger.info("Sending email for character {c} to"
+                             " {e}".format(c=c_name, e=dest_addr))
             if self.dry_run:
                 self.logger.warning("DRY RUN - not actually sending email")
                 continue
-            msg = self.format_message(from_addr, dest_addr, subj, c_name, c_diff, html_path, duration, output)
-            if hasattr(self.settings, 'GMAIL_USERNAME') and self.settings.GMAIL_USERNAME is not None:
-                self.send_gmail(from_addr, dest_addr, msg.as_string())
+            msg = self.format_message(from_addr,
+                                      dest_addr,
+                                      subj,
+                                      c_name,
+                                      c_diff,
+                                      html_path,
+                                      duration,
+                                      output)
+            if hasattr(self.settings, 'GMAIL_USERNAME'):
+                if self.settings.GMAIL_USERNAME is not None:
+                    self.send_gmail(from_addr, dest_addr, msg.as_string())
             else:
                 self.send_local(from_addr, dest_addr, msg.as_string())
         self.logger.debug("done sending emails for {cname}".format(cname=c_name))
 
-    def format_message(self, from_addr, dest_addr, subj, c_name, c_diff, html_path, duration, output):
+    def format_message(self,
+                       from_addr,
+                       dest_addr,
+                       subj,
+                       c_name,
+                       c_diff,
+                       html_path,
+                       duration,
+                       output):
         body = 'SimulationCraft was run for {c} due to the following changes:\n'.format(c=c_name)
         body += '\n' + c_diff + '\n\n'
         body += 'The run was completed in {d} and the HTML report is attached'.format(d=duration)
         body += '. (Note that you likely need to save the HTML attachment to disk and'
         body += ' view it from there; it will not render correctly in most email clients.)\n\n'
-        footer = 'This run was done on {h} at {t} by autosimcraft.py v{v}'
+        footer = 'This run was done on {h} at {t} by autosimulationcraft.py v{v}'
         body += footer.format(h=platform.node(),
                               t=self.now(),
                               v=self.VERSION)
         msg = MIMEMultipart()
         msg['Subject'] = subj
-        msg['From'] = formataddr(('AutoSimcraft', from_addr))
+        msg['From'] = formataddr(('AutoSimulationCraft', from_addr))
         msg['To'] = dest_addr
         msg['Date'] = formatdate(localtime=True)
         msg['Message-Id'] = make_msgid()
@@ -391,13 +416,17 @@ class AutoSimcraft:
         with open(html_path, 'r') as fh:
             html = fh.read()
         html_att = MIMEApplication(html)
-        html_att.add_header('Content-Disposition', 'attachment', filename=(c_name + '.html'))
+        html_att.add_header('Content-Disposition',
+                            'attachment',
+                            filename=(c_name + '.html'))
         msg.attach(html_att)
         output_att = MIMEApplication(output)
-        output_att.add_header('Content-Disposition', 'attachment', filename=(c_name + '_simc_output.txt'))
+        output_att.add_header('Content-Disposition',
+                              'attachment',
+                              filename=(c_name + '_simc_output.txt'))
         msg.attach(output_att)
         return msg
-        
+
     def send_gmail(self, from_addr, dest, msg_s):
         """
         Send email using GMail
@@ -421,13 +450,14 @@ class AutoSimcraft:
         Helper function to make unit tests easier - return datetime.now()
         """
         return datetime.datetime.now()
-    
+
     def get_battlenet(self, realm, character):
         """ get a character's info from Battlenet API """
         try:
             char = self.bnet.get_character(battlenet.UNITED_STATES, realm, character)
         except battlenet.exceptions.CharacterNotFound:
-            self.logger.error("ERROR - Character Not Found - realm='{r}' character='{c}'".format(r=realm, c=character))
+            self.logger.error("ERROR - Character Not Found - "
+                              "realm='{r}' character='{c}'".format(r=realm, c=character))
             return None
         self.logger.debug("got character from battlenet; getting further information")
         # get all of the info we need
@@ -448,7 +478,11 @@ class AutoSimcraft:
         # copy the dict
         d = deepcopy(char.__dict__['_data'])
         # remove stuff we don't want
-        for i in ['connection', 'achievementPoints', 'lastModified', '_items', 'achievement_points']:
+        for i in ['connection',
+                  'achievementPoints',
+                  'lastModified',
+                  '_items',
+                  'achievement_points']:
             if i in d:
                 del d[i]
         for t in ['primary', 'secondary']:

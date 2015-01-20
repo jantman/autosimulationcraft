@@ -1,9 +1,9 @@
 from setuptools import setup
 from sys import version_info
-from autosimcraft.version import VERSION
+from autosimulationcraft.version import VERSION
 
 if version_info[0] > 2 or version_info[1] < 7:
-    raise SystemExit("ERROR - autosimcraft currently only works with python 2.7; this should be fixed soon.")
+    raise SystemExit("ERROR - autosimulationcraft currently only works with python 2.7; this should be fixed soon.")
 
 with open('README.rst') as file:
     long_description = file.read()
@@ -27,19 +27,19 @@ classifiers = [
 ]
 
 setup(
-    name='autosimcraft',
+    name='autosimulationcraft',
     version=VERSION,
     author='Jason Antman',
     author_email='jason@jasonantman.com',
-    packages=['autosimcraft', 'autosimcraft.tests'],
+    packages=['autosimulationcraft', 'autosimulationcraft.tests'],
     entry_points="""
     [console_scripts]
-    autosimcraft = autosimcraft.runner:console_entry_point
+    autosimc = autosimulationcraft.runner:console_entry_point
     """,
-    url='http://github.com/jantman/autosimcraft/',
+    url='http://github.com/jantman/AutoSimulationCraft/',
     description='A python script to run SimulationCraft reports for World of Warcraft characters when their gear/stats/level/etc. changes.',
     long_description=long_description,
     install_requires=requires,
-    keywords="WoW Warcraft simcraft SimulationCraft",
+    keywords="WoW Warcraft simc SimulationCraft",
     classifiers=classifiers
 )
