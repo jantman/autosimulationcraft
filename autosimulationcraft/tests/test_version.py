@@ -38,14 +38,15 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-import pytest
 import re
 
 import autosimulationcraft.version
 
 
 # from: <https://github.com/mojombo/semver.org/issues/59#issuecomment-57884619>
-semver_re = re.compile(r'^((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))(?:-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$')
+semver_re = re.compile(r'^((?:0|(?:[1-9]\d*)))\.((?:0|(?:[1-9]\d*)))\.'
+                       '((?:0|(?:[1-9]\d*)))(?:-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)'
+                       '*))?(?:\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$')
 
 
 def test_version():

@@ -58,7 +58,8 @@ def test_parse_argv():
 def test_console_entry_genconfig():
     """ test console_entry_point() with --genconfig """
     with patch('autosimulationcraft.runner.parse_args') as mock_parse_args, \
-            patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.gen_config') as mock_gen_config:
+            patch('autosimulationcraft.autosimulationcraft.'
+                  'AutoSimulationCraft.gen_config') as mock_gen_config:
         args = Container()
         setattr(args, 'genconfig', True)
         setattr(args, 'confdir', '/foo/bar')

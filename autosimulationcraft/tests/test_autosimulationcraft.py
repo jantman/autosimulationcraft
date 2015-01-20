@@ -47,20 +47,30 @@ import datetime
 from copy import deepcopy
 import subprocess
 from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from base64 import b64decode
-import pickle
 
 from freezegun import freeze_time
 import battlenet
 
 from autosimulationcraft import autosimulationcraft
-from data_fixtures import *
-from fixtures import *
+from data_fixtures import bnet_data, char_data
+from fixtures import Container, mock_ns, mock_bnet_character
 
 
 def test_default_confdir():
     assert autosimulationcraft.DEFAULT_CONFDIR == '~/.autosimulationcraft'
+
+
+def make_flakes_happy():
+    """
+    hack to make flakes think fixtures are used.
+    this function never gets executed.
+    """
+    a = mock_ns
+    b = bnet_data
+    c = char_data
+    d = mock_bnet_character
+    print(a, b, c, d)
 
 
 class Test_AutoSimulationCraft:
@@ -69,8 +79,10 @@ class Test_AutoSimulationCraft:
         """ test SimpleScript.init() """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'battlenet.Connection', bn), \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(dry_run=False,
                                                         verbose=0,
                                                         confdir='~/.autosimulationcraft'
@@ -86,8 +98,10 @@ class Test_AutoSimulationCraft:
         m = MagicMock(spec_set=logging.Logger)
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'battlenet.Connection', bn), \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(logger=m)
         assert s.logger == m
 
@@ -95,8 +109,10 @@ class Test_AutoSimulationCraft:
         """ test SimpleScript.init() with dry_run=True """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'battlenet.Connection', bn), \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(dry_run=True)
         assert s.dry_run is True
 
@@ -104,8 +120,10 @@ class Test_AutoSimulationCraft:
         """ test SimpleScript.init() with verbose=1 """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'battlenet.Connection', bn), \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(verbose=1)
         assert s.logger.level == logging.INFO
 
@@ -113,17 +131,22 @@ class Test_AutoSimulationCraft:
         """ test SimpleScript.init() with verbose=2 """
         bn = MagicMock(spec_set=battlenet.Connection)
         rc = Mock()
-        with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc):
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'battlenet.Connection', bn), \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.read_config', rc):
             s = autosimulationcraft.AutoSimulationCraft(verbose=2)
         assert s.logger.level == logging.DEBUG
 
     def test_read_config_missing(self, mock_ns):
         """ test read_config() when settings file is missing """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_path_exists, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.import_from_path') as mock_import, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_config') as mock_validate:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_path_exists, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.import_from_path') as mock_import, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.validate_config'):
             mock_path_exists.return_value = False
             with pytest.raises(SystemExit) as excinfo:
                 s.read_config('/foo')
@@ -133,7 +156,8 @@ class Test_AutoSimulationCraft:
         assert mock_import.call_count == 0
         assert mock_path_exists.call_count == 1
         assert mocklog.error.call_args_list == [
-            call("ERROR - configuration file does not exist. Please run with --genconfig to generate an example one.")]
+            call("ERROR - configuration file does not exist. "
+                 "Please run with --genconfig to generate an example one.")]
 
     def test_read_config(self, mock_ns):
         """ test read_config() working correctly """
@@ -142,9 +166,12 @@ class Test_AutoSimulationCraft:
         setattr(mock_settings, 'CHARACTERS', [])
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(s, 'settings', mock_settings)
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_path_exists, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.import_from_path') as mock_import, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_config') as mock_validate:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_path_exists, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.import_from_path') as mock_import, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.validate_config') as mock_validate:
             mock_path_exists.return_value = True
             s.read_config('/foo')
         assert call(
@@ -156,8 +183,10 @@ class Test_AutoSimulationCraft:
     def test_genconfig(self):
         """ test gen_config() """
         cd = '/foo'
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_pe, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_pe, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=file)
             mock_pe.return_value = True
             autosimulationcraft.AutoSimulationCraft.gen_config(cd)
@@ -168,9 +197,12 @@ class Test_AutoSimulationCraft:
     def test_genconfig_nodir(self):
         """ test gen_config() with config directory missing """
         cd = '/foo'
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_pe, \
-                patch('autosimulationcraft.autosimulationcraft.os.mkdir') as mock_mkdir, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_pe, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'os.mkdir') as mock_mkdir, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mock_open:
             mock_open.return_value = MagicMock(spec=file)
             mock_pe.return_value = False
             autosimulationcraft.AutoSimulationCraft.gen_config(cd)
@@ -186,7 +218,7 @@ class Test_AutoSimulationCraft:
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(s, 'settings', mock_settings)
         with pytest.raises(SystemExit) as excinfo:
-            res = s.validate_config()
+            s.validate_config()
         assert excinfo.value.code == 1
         assert mocklog.error.call_args_list == [
             call("ERROR: Settings file must define CHARACTERS list")]
@@ -199,7 +231,7 @@ class Test_AutoSimulationCraft:
         setattr(mock_settings, 'CHARACTERS', 'foo')
         setattr(s, 'settings', mock_settings)
         with pytest.raises(SystemExit) as excinfo:
-            res = s.validate_config()
+            s.validate_config()
         assert excinfo.value.code == 1
         assert mocklog.error.call_args_list == [
             call("ERROR: Settings file must define CHARACTERS list")]
@@ -212,7 +244,7 @@ class Test_AutoSimulationCraft:
         setattr(mock_settings, 'CHARACTERS', [])
         setattr(s, 'settings', mock_settings)
         with pytest.raises(SystemExit) as excinfo:
-            res = s.validate_config()
+            s.validate_config()
         assert excinfo.value.code == 1
         assert mocklog.error.call_args_list == [
             call("ERROR: Settings file must define CHARACTERS list with at least one character")]
@@ -224,7 +256,7 @@ class Test_AutoSimulationCraft:
         setattr(mock_settings, 'DEFAULT_SIMC', 'foo')
         setattr(mock_settings, 'CHARACTERS', ['foo'])
         setattr(s, 'settings', mock_settings)
-        res = s.validate_config()
+        s.validate_config()
         assert mocklog.error.call_args_list == []
 
     @pytest.mark.skipif(
@@ -258,11 +290,12 @@ class Test_AutoSimulationCraft:
         importlib_mock = Mock()
         autosimulationcraft.sys.modules['importlib'] = importlib_mock
         sys.modules['importlib.machinery'] = machinery_mock
-        with patch('autosimulationcraft.autosimulationcraft.importlib.machinery', machinery_mock):
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'importlib.machinery', machinery_mock):
             s.import_from_path('foobar')
             assert s.settings == settings_mock
         assert call('importing foobar - <py33') in mocklog.debug.call_args_list
-        assert ls_mock.call_args_list == [call('settings', 'foobar')]
+        assert sfl_mock.call_args_list == [call('settings', 'foobar')]
         assert call('imported settings module') in mocklog.debug.call_args_list
 
     def test_validate_character(self, mock_ns):
@@ -314,11 +347,16 @@ class Test_AutoSimulationCraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.validate_character') as mock_validate, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = 'foo'
             mock_validate.return_value = True
             mock_get_bnet.return_value = {'foo': 'bar'}
@@ -351,11 +389,16 @@ class Test_AutoSimulationCraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.validate_character') as mock_validate, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = None
             mock_validate.return_value = False
             mock_get_bnet.return_value = {}
@@ -383,11 +426,16 @@ class Test_AutoSimulationCraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.validate_character') as mock_validate, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_validate.return_value = True
             mock_get_bnet.return_value = None
             mock_chc.return_value = True
@@ -415,11 +463,16 @@ class Test_AutoSimulationCraft:
         setattr(s, 'settings', s_container)
         setattr(s, 'character_cache', ccache)
         mocklog.debug.reset_mock()
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.validate_character') as mock_validate, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.do_character') as mock_do_char, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_has_changes') as mock_chc, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.write_character_cache') as mock_wcc:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.validate_character') as mock_validate, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.get_battlenet') as mock_get_bnet, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.do_character') as mock_do_char, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.character_has_changes') as mock_chc, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.write_character_cache') as mock_wcc:
             mock_chc.return_value = None
             mock_validate.return_value = True
             mock_get_bnet.return_value = {'foo': 'bar'}
@@ -485,8 +538,10 @@ class Test_AutoSimulationCraft:
         """ test load_character_cache() on nonexistent file """
         bn, rc, mocklog, s, conn, lcc = mock_ns
         mocko = mock_open()
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_fexist, \
-                patch('autosimulationcraft.autosimulationcraft.open', mocko, create=True) as m:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_fexist, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', mocko, create=True):
             mock_fexist.return_value = False
             res = s.load_character_cache()
         assert mocko.mock_calls == []
@@ -497,9 +552,12 @@ class Test_AutoSimulationCraft:
     def test_load_char_cache(self, mock_ns):
         """ test load_character_cache() """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_fexist, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-                patch('autosimulationcraft.autosimulationcraft.pickle.load') as mock_pkl:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_fexist, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'pickle.load') as mock_pkl:
             mock_fexist.return_value = True
             mocko.return_value = 'filecontents'
             mock_pkl.return_value = 'unpickled'
@@ -518,8 +576,10 @@ class Test_AutoSimulationCraft:
         bn, rc, mocklog, s, conn, lcc = mock_ns
         cache_content = {"foo": "bar", "baz": 3}
         openmock = MagicMock()
-        with patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-                patch('autosimulationcraft.autosimulationcraft.pickle.dump') as mock_pkl:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'pickle.dump') as mock_pkl:
             mocko.return_value = openmock
             s.character_cache = deepcopy(cache_content)
             s.write_character_cache()
@@ -556,7 +616,8 @@ class Test_AutoSimulationCraft:
                                          u'id': 114395,
                                          u'icon': u'inv_cloth_draenordungeon_c_01shoulder'}
         s.character_cache = ccache
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.character_diff') as mock_char_diff:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.character_diff') as mock_char_diff:
             mock_char_diff.return_value = 'foobar'
             result = s.character_has_changes(cname, new_data)
         assert result == 'foobar'
@@ -595,11 +656,13 @@ class Test_AutoSimulationCraft:
                     "change [u'items', u'shoulder', u'stats', 2, u'stat'] from 36 to 5",
                     "change [u'items', u'shoulder', u'stats', 2, u'amount'] from 72 to 109",
                     "change [u'items', u'shoulder', u'stats', 3, u'amount'] from 207 to 163",
-                    "change items.shoulder.name from Twin-Gaze Spaulders to Mantle of Hooded Nightmares of the Savage",
+                    "change items.shoulder.name from Twin-Gaze Spaulders "
+                    "to Mantle of Hooded Nightmares of the Savage",
                     "remove items.shoulder.tooltipParams [(u'transmogItem', 31054)]",
                     "change items.shoulder.armor from 71 to 60",
                     "change items.shoulder.quality from 4 to 3",
-                    "change items.shoulder.icon from inv_shoulder_cloth_draenorlfr_c_01 to inv_cloth_draenordungeon_c_01shoulder",
+                    "change items.shoulder.icon from inv_shoulder_cloth_draenorlfr_c_01 "
+                    "to inv_cloth_draenordungeon_c_01shoulder",
                     "change items.shoulder.itemLevel from 640 to 615",
                     "change items.shoulder.id from 115997 to 114395",
                     "add items.shoulder.bonusLists [(0, 83)]",
@@ -651,12 +714,18 @@ class Test_AutoSimulationCraft:
 
         def mock_ope_se(p):
             return False
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_ope, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = mock_dtnow_se
             s.settings = settings
@@ -684,12 +753,18 @@ class Test_AutoSimulationCraft:
 
         def mock_ope_se(p):
             return True
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_ope, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = [
                 datetime.datetime(
@@ -712,8 +787,9 @@ class Test_AutoSimulationCraft:
                                     call().__exit__(None, None, None)]
         assert mock_chdir.call_args_list == [
             call('/home/user/.autosimulationcraft')]
+        fpath = '/home/user/.autosimulationcraft/cname@rname.simc'
         assert mock_subp.call_args_list == [call(['/path/to/simc',
-                                                  '/home/user/.autosimulationcraft/cname@rname.simc'],
+                                                  fpath],
                                                  stderr=subprocess.STDOUT)]
         assert mock_sce.call_args_list == [call('cname@rname',
                                                 {'realm': 'rname',
@@ -742,12 +818,18 @@ class Test_AutoSimulationCraft:
         def mock_ope_se(p):
             return True
 
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_ope, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = [
                 datetime.datetime(
@@ -771,8 +853,9 @@ class Test_AutoSimulationCraft:
                                     call().__exit__(None, None, None)]
         assert mock_chdir.call_args_list == [
             call('/home/user/.autosimulationcraft')]
+        fpath = '/home/user/.autosimulationcraft/cname@rname.simc'
         assert mock_subp.call_args_list == [call(['/path/to/simc',
-                                                  '/home/user/.autosimulationcraft/cname@rname.simc'],
+                                                  fpath],
                                                  stderr=subprocess.STDOUT)]
         assert mock_sce.call_args_list == []
         assert mocklog.error.call_args_list == [call('Error running simc!')]
@@ -795,12 +878,18 @@ class Test_AutoSimulationCraft:
                 return False
             return True
 
-        with patch('autosimulationcraft.autosimulationcraft.os.path.exists') as mock_ope, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mocko, \
-                patch('autosimulationcraft.autosimulationcraft.os.chdir') as mock_chdir, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_dtnow, \
-                patch('autosimulationcraft.autosimulationcraft.subprocess.check_output') as mock_subp, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_char_email') as mock_sce:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'os.path.exists') as mock_ope, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mocko, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'os.chdir') as mock_chdir, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.now') as mock_dtnow, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'subprocess.check_output') as mock_subp, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
             mock_dtnow.side_effect = [
                 datetime.datetime(
@@ -823,8 +912,9 @@ class Test_AutoSimulationCraft:
                                     call().__exit__(None, None, None)]
         assert mock_chdir.call_args_list == [
             call('/home/user/.autosimulationcraft')]
+        fpath = '/home/user/.autosimulationcraft/cname@rname.simc'
         assert mock_subp.call_args_list == [call(['/path/to/simc',
-                                                  '/home/user/.autosimulationcraft/cname@rname.simc'],
+                                                  fpath],
                                                  stderr=subprocess.STDOUT)]
         assert mock_sce.call_args_list == []
         assert mocklog.error.call_args_list == [
@@ -846,11 +936,16 @@ class Test_AutoSimulationCraft:
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.send_gmail') as mock_gmail, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -889,11 +984,16 @@ class Test_AutoSimulationCraft:
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.send_gmail') as mock_gmail, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -934,11 +1034,16 @@ class Test_AutoSimulationCraft:
         setattr(settings, 'CHARACTERS', [c_settings])
         setattr(settings, 'GMAIL_USERNAME', 'gmailuser')
         setattr(settings, 'GMAIL_PASSWORD', 'gmailpass')
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.send_gmail') as mock_gmail, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.return_value.as_string.return_value = 'msgbody'
@@ -973,15 +1078,19 @@ class Test_AutoSimulationCraft:
         html_path = '/path/to/output.html'
         duration = datetime.timedelta(seconds=3723)  # 1h 2m 3s
         output = 'simc_output_string'
-        subj = 'SimulationCraft report for cname@rname'
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
-        with patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_gmail') as mock_gmail, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.send_local') as mock_local, \
-                patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-                patch('autosimulationcraft.autosimulationcraft.getpass.getuser') as mock_user:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.send_gmail') as mock_gmail, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'getpass.getuser') as mock_user:
             mock_node.return_value = 'nodename'
             mock_user.return_value = 'username'
             mock_format.as_string.return_value = 'msgbody'
@@ -1018,12 +1127,18 @@ class Test_AutoSimulationCraft:
         expected += 'The run was completed in 1:02:03 and the HTML report is attached'
         expected += '. (Note that you likely need to save the HTML attachment to disk and'
         expected += ' view it from there; it will not render correctly in most email clients.)\n\n'
-        expected += 'This run was done on nodename at 2014-01-01 00:00:00 by autosimulationcraft.py va.b.c'
-        with patch('autosimulationcraft.autosimulationcraft.platform.node') as mock_node, \
-                patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.now') as mock_now, \
-                patch('autosimulationcraft.autosimulationcraft.open', create=True) as mock_open, \
-                patch('autosimulationcraft.autosimulationcraft.make_msgid') as mock_msgid, \
-                patch('autosimulationcraft.autosimulationcraft.formatdate') as mock_date:
+        expected += 'This run was done on nodename at 2014-01-01 00:00:00 by '
+        expected += 'autosimulationcraft.py va.b.c'
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.now') as mock_now, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'open', create=True) as mock_open, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'make_msgid') as mock_msgid, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'formatdate') as mock_date:
             mock_msgid.return_value = 'mymessageid'
             mock_date.return_value = 'mydate'
             mock_node.return_value = 'nodename'
@@ -1063,7 +1178,8 @@ class Test_AutoSimulationCraft:
     def test_send_local(self, mock_ns):
         """ send_local() test """
         bn, rc, mocklog, s, conn, lcc = mock_ns
-        with patch('autosimulationcraft.autosimulationcraft.smtplib.SMTP', autospec=True) as mock_smtp:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'smtplib.SMTP', autospec=True) as mock_smtp:
             s.send_local('from', 'to', 'msg')
         assert mock_smtp.mock_calls == [call('localhost'),
                                         call().sendmail('from', ['to'], 'msg'),
@@ -1076,7 +1192,8 @@ class Test_AutoSimulationCraft:
         settings = Container()
         setattr(settings, 'GMAIL_USERNAME', 'myusername')
         setattr(settings, 'GMAIL_PASSWORD', 'mypassword')
-        with patch('autosimulationcraft.autosimulationcraft.smtplib.SMTP', autospec=True) as mock_smtp:
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'smtplib.SMTP', autospec=True) as mock_smtp:
             s.settings = settings
             s.send_gmail('from', 'to', 'msg')
         assert mock_smtp.mock_calls == [call('smtp.gmail.com:587'),
