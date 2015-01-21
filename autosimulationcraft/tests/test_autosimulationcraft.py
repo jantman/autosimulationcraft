@@ -764,8 +764,11 @@ class Test_AutoSimulationCraft:
                 patch('autosimulationcraft.autosimulationcraft.'
                       'subprocess.check_output') as mock_subp, \
                 patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.options_for_char') as mock_ofc, \
+                patch('autosimulationcraft.autosimulationcraft.'
                       'AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
+            mock_ofc.return_value = 'foo\n'
             mock_dtnow.side_effect = [
                 datetime.datetime(
                     2014, 1, 1, 0, 0, 0), datetime.datetime(
@@ -781,10 +784,11 @@ class Test_AutoSimulationCraft:
                                     call().__enter__().write(
                                         '"armory=us,rname,cname"\n'),
                                     call().__enter__().write(
-                                        'calculate_scale_factors=1\n'),
+                                        'foo\n'),
                                     call().__enter__().write(
                                         'html=cname@rname.html'),
                                     call().__exit__(None, None, None)]
+        assert mock_ofc.call_args_list == [call(c_settings)]
         assert mock_chdir.call_args_list == [
             call('/home/user/.autosimulationcraft')]
         fpath = '/home/user/.autosimulationcraft/cname@rname.simc'
@@ -829,8 +833,11 @@ class Test_AutoSimulationCraft:
                 patch('autosimulationcraft.autosimulationcraft.'
                       'subprocess.check_output') as mock_subp, \
                 patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.options_for_char') as mock_ofc, \
+                patch('autosimulationcraft.autosimulationcraft.'
                       'AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
+            mock_ofc.return_value = 'foo\n'
             mock_dtnow.side_effect = [
                 datetime.datetime(
                     2014, 1, 1, 0, 0, 0), datetime.datetime(
@@ -847,7 +854,7 @@ class Test_AutoSimulationCraft:
                                     call().__enter__().write(
                                         '"armory=us,rname,cname"\n'),
                                     call().__enter__().write(
-                                        'calculate_scale_factors=1\n'),
+                                        'foo\n'),
                                     call().__enter__().write(
                                         'html=cname@rname.html'),
                                     call().__exit__(None, None, None)]
@@ -889,8 +896,11 @@ class Test_AutoSimulationCraft:
                 patch('autosimulationcraft.autosimulationcraft.'
                       'subprocess.check_output') as mock_subp, \
                 patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.options_for_char') as mock_ofc, \
+                patch('autosimulationcraft.autosimulationcraft.'
                       'AutoSimulationCraft.send_char_email') as mock_sce:
             mock_ope.side_effect = mock_ope_se
+            mock_ofc.return_value = 'foo\n'
             mock_dtnow.side_effect = [
                 datetime.datetime(
                     2014, 1, 1, 0, 0, 0), datetime.datetime(
@@ -906,7 +916,7 @@ class Test_AutoSimulationCraft:
                                     call().__enter__().write(
                                         '"armory=us,rname,cname"\n'),
                                     call().__enter__().write(
-                                        'calculate_scale_factors=1\n'),
+                                        'foo\n'),
                                     call().__enter__().write(
                                         'html=cname@rname.html'),
                                     call().__exit__(None, None, None)]
@@ -919,6 +929,87 @@ class Test_AutoSimulationCraft:
         assert mock_sce.call_args_list == []
         assert mocklog.error.call_args_list == [
             call('ERROR: simc finished but HTML file not found on disk.')]
+
+    def test_options_for_char_none(self, mock_ns):
+        """ test options_for_char() with none """
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com']}
+        settings = Container()
+        setattr(settings, 'SIMC_PATH', '/path/to/simc')
+        setattr(settings, 'CHARACTERS', [c_settings])
+
+        s.settings = settings
+        res = s.options_for_char(c_settings)
+        assert res == ''
+
+    def test_options_for_char_global(self, mock_ns):
+        """ test options_for_char() with only global options """
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com']}
+        settings = Container()
+        setattr(settings, 'SIMC_PATH', '/path/to/simc')
+        setattr(settings, 'CHARACTERS', [c_settings])
+        setattr(settings, 'GLOBAL_OPTIONS', {'foo': 'bar', 'baz': 'blam'})
+
+        s.settings = settings
+        res = s.options_for_char(c_settings)
+        assert res == 'baz=blam\nfoo=bar\n'
+
+    def test_options_for_char_charonly(self, mock_ns):
+        """ test options_for_char() with only per-char options """
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com'],
+            'options': {'foo': 'bar', 'baz': 'blam'},
+        }
+        settings = Container()
+        setattr(settings, 'SIMC_PATH', '/path/to/simc')
+        setattr(settings, 'CHARACTERS', [c_settings])
+        s.settings = settings
+        res = s.options_for_char(c_settings)
+        assert res == 'baz=blam\nfoo=bar\n'
+
+    def test_options_for_char_merge(self, mock_ns):
+        """ test options_for_char() with non-conflicting char and global options """
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com'],
+            'options': {'c1': 'c1val', 'c2': 'c2val'},
+        }
+        settings = Container()
+        setattr(settings, 'SIMC_PATH', '/path/to/simc')
+        setattr(settings, 'CHARACTERS', [c_settings])
+        setattr(settings, 'GLOBAL_OPTIONS', {'g1': 'g1val', 'g2': 'g2val'})
+        s.settings = settings
+        res = s.options_for_char(c_settings)
+        assert res == 'c1=c1val\nc2=c2val\ng1=g1val\ng2=g2val\n'
+
+    def test_options_for_char_override(self, mock_ns):
+        """ test options_for_char() with char options overriding global """
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        c_settings = {
+            'realm': 'rname',
+            'name': 'cname',
+            'email': ['foo@example.com'],
+            'options': {'c1': 'c1val', 'c2': 'c2val', 'zzz': 'charval'},
+        }
+        settings = Container()
+        setattr(settings, 'SIMC_PATH', '/path/to/simc')
+        setattr(settings, 'CHARACTERS', [c_settings])
+        setattr(settings, 'GLOBAL_OPTIONS', {'g1': 'g1val', 'g2': 'g2val', 'zzz': 'globalval'})
+        s.settings = settings
+        res = s.options_for_char(c_settings)
+        assert res == 'c1=c1val\nc2=c2val\ng1=g1val\ng2=g2val\nzzz=charval\n'
 
     def test_send_char_email(self, mock_ns):
         """ test send_char_email() in normal case """
@@ -984,6 +1075,56 @@ class Test_AutoSimulationCraft:
         settings = Container()
         setattr(settings, 'SIMC_PATH', '/path/to/simc')
         setattr(settings, 'CHARACTERS', [c_settings])
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.send_gmail') as mock_gmail, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.format_message', spec_set=MIMEMultipart) as mock_format, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'AutoSimulationCraft.send_local') as mock_local, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'platform.node') as mock_node, \
+                patch('autosimulationcraft.autosimulationcraft.'
+                      'getpass.getuser') as mock_user:
+            mock_node.return_value = 'nodename'
+            mock_user.return_value = 'username'
+            mock_format.return_value.as_string.return_value = 'msgbody'
+            s.settings = settings
+            s.send_char_email(c_name,
+                              c_settings,
+                              c_diff,
+                              html_path,
+                              duration,
+                              output)
+        assert mock_format.call_args_list == [call('username@nodename',
+                                                   'foo@example.com',
+                                                   subj,
+                                                   c_name,
+                                                   c_diff,
+                                                   html_path,
+                                                   duration,
+                                                   output)]
+        assert mock_local.call_args_list == [call('username@nodename',
+                                                  'foo@example.com',
+                                                  'msgbody')]
+        assert mock_gmail.call_args_list == []
+
+    def test_send_char_email_gmailnone(self, mock_ns):
+        """ test send_char_email() with email as a string """
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        c_settings = {'realm': 'rname',
+                      'name': 'cname',
+                      'email': 'foo@example.com'}
+        c_name = 'cname@rname'
+        c_diff = 'diffcontent'
+        html_path = '/path/to/output.html'
+        duration = datetime.timedelta(seconds=3723)  # 1h 2m 3s
+        output = 'simc_output_string'
+        subj = 'SimulationCraft report for cname@rname'
+        settings = Container()
+        setattr(settings, 'SIMC_PATH', '/path/to/simc')
+        setattr(settings, 'CHARACTERS', [c_settings])
+        setattr(settings, 'GMAIL_USERNAME', None)
+        setattr(settings, 'GMAIL_PASSWORD', 'gmailpass')
         with patch('autosimulationcraft.autosimulationcraft.'
                    'AutoSimulationCraft.send_gmail') as mock_gmail, \
                 patch('autosimulationcraft.autosimulationcraft.'

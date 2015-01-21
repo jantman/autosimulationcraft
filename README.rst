@@ -7,16 +7,16 @@ AutoSimulationCraft
 .. image:: https://pypip.in/d/autosimulationcraft/badge.png
    :target: https://crate.io/packages/autosimulationcraft
 
-.. image:: https://landscape.io/github/jantman/AutoSimulationCraft/master/landscape.svg
-   :target: https://landscape.io/github/jantman/AutoSimulationCraft/master
+.. image:: https://landscape.io/github/jantman/autosimulationcraft/master/landscape.svg
+   :target: https://landscape.io/github/jantman/autosimulationcraft/master
    :alt: Code Health
 
-.. image:: https://secure.travis-ci.org/jantman/AutoSimulationCraft.png?branch=master
-   :target: http://travis-ci.org/jantman/AutoSimulationCraft
+.. image:: https://secure.travis-ci.org/jantman/autosimulationcraft.png?branch=master
+   :target: http://travis-ci.org/jantman/autosimulationcraft
    :alt: travis-ci for master branch
 
-.. image:: https://codecov.io/github/jantman/AutoSimulationCraft/coverage.svg?branch=master
-   :target: https://codecov.io/github/jantman/AutoSimulationCraft?branch=master
+.. image:: https://codecov.io/github/jantman/autosimulationcraft/coverage.svg?branch=master
+   :target: https://codecov.io/github/jantman/autosimulationcraft?branch=master
    :alt: coverage report for master branch
 
 .. image:: http://www.repostatus.org/badges/0.1.0/active.svg
@@ -96,7 +96,7 @@ on a regular basis. If you want to, you _can_ run it manually.
 Bugs and Feature Requests
 -------------------------
 
-Bug reports and feature requests are happily accepted via the `GitHub Issue Tracker <https://github.com/jantman/AutoSimulationCraft/issues>`_. Pull requests are
+Bug reports and feature requests are happily accepted via the `GitHub Issue Tracker <https://github.com/jantman/autosimulationcraft/issues>`_. Pull requests are
 welcome. Issues that don't have an accompanying pull request will be worked on
 as my time and priority allows.
 
@@ -105,7 +105,7 @@ Development
 
 To install for development:
 
-1. Fork the `AutoSimulationCraft <https://github.com/jantman/AutoSimulationCraft>`_ repository on GitHub
+1. Fork the `autosimulationcraft <https://github.com/jantman/autosimulationcraft>`_ repository on GitHub
 2. Create a new branch off of master in your fork.
 
 .. code-block:: bash

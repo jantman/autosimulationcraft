@@ -104,15 +104,19 @@ class AutoSimulationCraft:
     # example autosimulationcraft.py configuration file
     # all file paths are relative to this file
     ###############################################################
-    # this is evaluated as ptrhon, so you can do whatever you want
+    # this is evaluated as python, so you can do whatever you want
     # as long as these variables end up being set
     ###############################################################
+    # path to the simc executable
     SIMC_PATH = '/usr/bin/simc'
+    # options to be added to every characters' simc configuration
+    GLOBAL_OPTIONS = {'threads': 5}
     CHARACTERS = [
       {
         'realm': 'realname',
         'name': 'character_name',
         'email': 'you@domain.com',
+        'options': {'fight_style': 'LightMovement'},
       },
       {
         'realm': 'realname',
@@ -319,7 +323,7 @@ class AutoSimulationCraft:
         with open(simc_file, 'w') as fh:
             fh.write('"armory=us,{realm},{char}"\n'.format(realm=c_settings['realm'],
                                                            char=c_settings['name']))
-            fh.write("calculate_scale_factors=1\n")
+            fh.write(self.options_for_char(c_settings))
             fh.write("html={cn}.html".format(cn=c_name))
         os.chdir(self.confdir)
         self.logger.debug("Running: {p} {f}".format(p=self.settings.SIMC_PATH, f=simc_file))
@@ -343,6 +347,24 @@ class AutoSimulationCraft:
                              html_file,
                              (end - start),
                              res)
+
+    def options_for_char(self, c_settings):
+        """
+        Return simc options for the given character settings.
+
+        :rtype: string
+        """
+        opts = {}
+        if 'options' not in c_settings and not hasattr(self.settings, 'GLOBAL_OPTIONS'):
+            return ''
+        if hasattr(self.settings, 'GLOBAL_OPTIONS'):
+            opts.update(self.settings.GLOBAL_OPTIONS)
+        if 'options' in c_settings:
+            opts.update(c_settings['options'])
+        s = ''
+        for k in sorted(opts):
+            s += '{k}={v}\n'.format(k=k, v=opts[k])
+        return s
 
     def send_char_email(self, c_name, c_settings, c_diff, html_path, duration, output):
         """
@@ -380,9 +402,9 @@ class AutoSimulationCraft:
                                       html_path,
                                       duration,
                                       output)
-            if hasattr(self.settings, 'GMAIL_USERNAME'):
-                if self.settings.GMAIL_USERNAME is not None:
-                    self.send_gmail(from_addr, dest_addr, msg.as_string())
+            if hasattr(self.settings, 'GMAIL_USERNAME') \
+               and self.settings.GMAIL_USERNAME is not None:
+                self.send_gmail(from_addr, dest_addr, msg.as_string())
             else:
                 self.send_local(from_addr, dest_addr, msg.as_string())
         self.logger.debug("done sending emails for {cname}".format(cname=c_name))
