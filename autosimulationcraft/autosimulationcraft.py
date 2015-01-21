@@ -402,9 +402,9 @@ class AutoSimulationCraft:
                                       html_path,
                                       duration,
                                       output)
-            if hasattr(self.settings, 'GMAIL_USERNAME'):
-                if self.settings.GMAIL_USERNAME is not None:
-                    self.send_gmail(from_addr, dest_addr, msg.as_string())
+            if hasattr(self.settings, 'GMAIL_USERNAME') \
+               and self.settings.GMAIL_USERNAME is not None:
+                self.send_gmail(from_addr, dest_addr, msg.as_string())
             else:
                 self.send_local(from_addr, dest_addr, msg.as_string())
         self.logger.debug("done sending emails for {cname}".format(cname=c_name))
