@@ -42,6 +42,7 @@ from mock import patch, call
 import pytest
 
 import autosimulationcraft.runner
+from autosimulationcraft.version import VERSION
 from fixtures import Container
 
 
@@ -53,6 +54,7 @@ def test_parse_argv():
     assert args.verbose == 2
     assert args.confdir == 'foobar'
     assert args.genconfig is True
+    assert args.version is False
 
 
 def test_console_entry_genconfig():
@@ -63,11 +65,25 @@ def test_console_entry_genconfig():
         args = Container()
         setattr(args, 'genconfig', True)
         setattr(args, 'confdir', '/foo/bar')
+        setattr(args, 'version', False)
         mock_parse_args.return_value = args
         with pytest.raises(SystemExit):
             autosimulationcraft.runner.console_entry_point()
     assert mock_parse_args.call_count == 1
     assert mock_gen_config.call_args_list == [call('/foo/bar')]
+
+
+def test_console_entry_version(capsys):
+    """ test console_entry_point() with --version """
+    with patch('autosimulationcraft.runner.parse_args') as mock_parse_args:
+        args = Container()
+        setattr(args, 'version', True)
+        mock_parse_args.return_value = args
+        with pytest.raises(SystemExit):
+            autosimulationcraft.runner.console_entry_point()
+    out, err = capsys.readouterr()
+    assert out == '{v}\n'.format(v=VERSION)
+    assert mock_parse_args.call_count == 1
 
 
 def test_console_entry():
@@ -79,6 +95,7 @@ def test_console_entry():
         setattr(args, 'confdir', '/foo/bar')
         setattr(args, 'dry_run', False)
         setattr(args, 'verbose', 1)
+        setattr(args, 'version', False)
         mock_parse_args.return_value = args
         autosimulationcraft.runner.console_entry_point()
     assert mock_parse_args.call_count == 1
