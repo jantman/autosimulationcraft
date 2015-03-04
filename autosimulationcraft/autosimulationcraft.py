@@ -292,8 +292,7 @@ class AutoSimulationCraft:
         s = ''
         for x in sorted(list(d)):
             if x[0] == 'change':
-                s += 'change {item} from {a} to {b}\n'.format(typ=x[0],
-                                                              item=x[1],
+                s += 'change {item} from {a} to {b}\n'.format(item=x[1],
                                                               a=x[2][0],
                                                               b=x[2][1])
             elif x[0] == 'remove':
