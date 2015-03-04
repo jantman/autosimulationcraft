@@ -67,7 +67,8 @@ def mock_ns():
 
     with patch('autosimulationcraft.autosimulationcraft.battlenet.Connection', bn), \
             patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.read_config', rc), \
-            patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.load_character_cache', lc) as lcc, \
+            patch('autosimulationcraft.autosimulationcraft.AutoSimulationCraft.load_character_cache',
+                  lc) as lcc, \
             patch('autosimulationcraft.autosimulationcraft.os.path.expanduser') as mock_eu, \
             patch('autosimulationcraft.autosimulationcraft.os.path.abspath') as mock_ap:
         mock_ap.side_effect = mock_ap_se

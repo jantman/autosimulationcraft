@@ -79,22 +79,22 @@ from email.mime.application import MIMEApplication
 from email.utils import formatdate
 from email.utils import make_msgid
 from email.utils import formataddr
+from dictdiffer import diff
+import battlenet
+
+from config import DEFAULT_CONFDIR
 
 if sys.version_info[0] > 3 or (sys.version_info[0] == 3 and sys.version_info[1] >= 3):
     import importlib.machinery
 else:
     import imp
 
-from dictdiffer import diff
-import battlenet
-
-from config import DEFAULT_CONFDIR
-
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(level=logging.ERROR, format=FORMAT)
 
 
 class AutoSimulationCraft:
+
     """ might as well use a class. It'll make things easier later. """
 
     VERSION = '0.0.1'
@@ -255,6 +255,7 @@ class AutoSimulationCraft:
     def character_has_changes(self, c_name_realm, c_bnet):
         """
         Test if a chracter has changed since the last run.
+
         If it does not have changes, return None.
         If it does have changes, return a string human-readable representation
         of those changes.
@@ -292,8 +293,7 @@ class AutoSimulationCraft:
         s = ''
         for x in sorted(list(d)):
             if x[0] == 'change':
-                s += 'change {item} from {a} to {b}\n'.format(typ=x[0],
-                                                              item=x[1],
+                s += 'change {item} from {a} to {b}\n'.format(item=x[1],
                                                               a=x[2][0],
                                                               b=x[2][1])
             elif x[0] == 'remove':
@@ -450,9 +450,7 @@ class AutoSimulationCraft:
         return msg
 
     def send_gmail(self, from_addr, dest, msg_s):
-        """
-        Send email using GMail
-        """
+        """Send email using GMail"""
         s = smtplib.SMTP('smtp.gmail.com:587')
         s.starttls()
         s.login(self.settings.GMAIL_USERNAME, self.settings.GMAIL_PASSWORD)
@@ -468,9 +466,7 @@ class AutoSimulationCraft:
         s.quit()
 
     def now(self):
-        """
-        Helper function to make unit tests easier - return datetime.now()
-        """
+        """Helper function to make unit tests easier - return datetime.now() """
         return datetime.datetime.now()
 
     def get_battlenet(self, realm, character):

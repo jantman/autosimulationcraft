@@ -43,6 +43,7 @@ import argparse
 import os
 
 from config import DEFAULT_CONFDIR
+from version import VERSION
 from autosimulationcraft import AutoSimulationCraft
 
 
@@ -53,7 +54,9 @@ def parse_args(argv):
     this uses the new argparse module instead of optparse
     see: <https://docs.python.org/2/library/argparse.html>
     """
-    p = argparse.ArgumentParser(description='Sample python script skeleton.')
+    p = argparse.ArgumentParser(description='A python script to run SimulationCraft '
+                                'reports for World of Warcraft characters when their '
+                                'gear/stats/level/etc. changes.')
     p.add_argument('-d', '--dry-run', dest='dry_run', action='store_true', default=False,
                    help="dry-run - don't send email, just say what would be sent")
     p.add_argument('-v', '--verbose', dest='verbose', action='count', default=0,
@@ -63,7 +66,8 @@ def parse_args(argv):
                    help='configuration directory (default: {c})'.format(c=DEFAULT_CONFDIR))
     p.add_argument('--genconfig', dest='genconfig', action='store_true', default=False,
                    help='generate a sample configuration file at configdir/settings.py')
-
+    p.add_argument('--version', dest='version', action='store_true', default=False,
+                   help='print version number and exit.')
     args = p.parse_args(argv)
 
     return args
@@ -71,6 +75,9 @@ def parse_args(argv):
 
 def console_entry_point():
     args = parse_args(sys.argv[1:])
+    if args.version:
+        print(VERSION)
+        raise SystemExit()
     if args.genconfig:
         AutoSimulationCraft.gen_config(args.confdir)
         cpath = os.path.join(os.path.abspath(os.path.expanduser(args.confdir)), 'settings.py')
