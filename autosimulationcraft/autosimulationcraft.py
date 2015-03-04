@@ -252,6 +252,23 @@ class AutoSimulationCraft:
         realm = realm.replace(' ', '')
         return '{n}@{r}'.format(n=name, r=realm)
 
+    def fix_char_for_diff(self, char_dict):
+        """
+        Remove unimportant items for a character dict prior to diffing.
+
+        Given a charactert dict, remove any portions that we don't want
+        used in the diff for determining if a character changed or not.
+
+        :param char_dict: character dict
+        :type char_dict: dict
+        :rtype: dict
+        """
+        if 'totalHonorableKills' in char_dict:
+            del char_dict['totalHonorableKills']
+        if 'professions' in char_dict:
+            del char_dict['professions']
+        return char_dict
+
     def character_has_changes(self, c_name_realm, c_bnet):
         """
         Test if a chracter has changed since the last run.
@@ -269,7 +286,8 @@ class AutoSimulationCraft:
         if c_name_realm not in self.character_cache:
             self.logger.debug("character not in cache: {c}".format(c=c_name_realm))
             return "Character not in cache (has not been seen before)."
-        c_old = self.character_cache[c_name_realm]
+        c_bnet = self.fix_char_for_diff(c_bnet)
+        c_old = self.fix_char_for_diff(self.character_cache[c_name_realm])
         if c_old == c_bnet:
             self.logger.debug("character identical in cache"
                               " and battlenet: {c}".format(c=c_name_realm))

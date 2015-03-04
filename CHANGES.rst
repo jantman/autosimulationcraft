@@ -5,6 +5,7 @@ Unreleased (master)
 -------------------
 
 * Add --version command line option to print current version
+* Ignore change to professions and total honorable kills when comparing new/old character data
 
 0.0.2 (2015-01-19)
 ------------------
