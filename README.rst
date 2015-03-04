@@ -153,7 +153,7 @@ Release Checklist
 
    * Make sure your ~/.pypirc file is correct
    * ``python setup.py register -r https://testpypi.python.org/pypi``
-   * ``python setup.py sdist upload -r https://testpypi.python.org/pypi``
+   * ``python setup.py sdist bdist_wheel upload -r https://testpypi.python.org/pypi``
    * Check that the README renders at https://testpypi.python.org/pypi/autosimulationcraft
 
 8. Create a pull request for the release to be merge into master. Upon successful Travis build, merge it.
@@ -164,6 +164,6 @@ Release Checklist
 
 10. Upload package to live pypi:
 
-    * ``python setup.py sdist upload``
+    * ``python setup.py sdist bdist_wheel upload``
 
 11. make sure any GH issues fixed in the release were closed.
