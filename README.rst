@@ -162,8 +162,8 @@ Release Checklist
    * tag the release. for now the message is quite simple: ``git tag -a vX.Y.Z -m 'X.Y.Z released YYYY-MM-DD'``
    * push the tag to GitHub: ``git push origin vX.Y.Z``
 
-11. Upload package to live pypi:
+10. Upload package to live pypi:
 
     * ``python setup.py sdist upload``
 
-10. make sure any GH issues fixed in the release were closed.
+11. make sure any GH issues fixed in the release were closed.
