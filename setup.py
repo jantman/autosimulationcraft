@@ -17,7 +17,7 @@ classifiers = [
     'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Intended Audience :: End Users/Desktop',
-    'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)'
+    'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     'Natural Language :: English',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
