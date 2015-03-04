@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Unreleased (master)
+-------------------
+
+* Add --version command line option to print current version
+
 0.0.2 (2015-01-19)
 ------------------
 
