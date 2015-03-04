@@ -617,10 +617,17 @@ class Test_AutoSimulationCraft:
                                          u'icon': u'inv_cloth_draenordungeon_c_01shoulder'}
         s.character_cache = ccache
         with patch('autosimulationcraft.autosimulationcraft.'
-                   'AutoSimulationCraft.character_diff') as mock_char_diff:
+                   'AutoSimulationCraft.character_diff') as mock_char_diff, \
+            patch('autosimulationcraft.autosimulationcraft.'
+                  'AutoSimulationCraft.fix_char_for_diff') as mock_fix_char:
+            mock_fix_char.side_effect = lambda x: x
             mock_char_diff.return_value = 'foobar'
             result = s.character_has_changes(cname, new_data)
         assert result == 'foobar'
+        assert mock_fix_char.mock_calls == [
+            call(new_data),
+            call(orig_data)
+        ]
         assert mock_char_diff.call_args_list == [call(orig_data, new_data)]
 
     def test_character_diff_item(self, mock_ns, char_data):
@@ -678,7 +685,10 @@ class Test_AutoSimulationCraft:
         ccache = {cname: orig_data}
         new_data = deepcopy(orig_data)
         s.character_cache = ccache
-        result = s.character_has_changes(cname, new_data)
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.fix_char_for_diff') as mock_fix_char:
+            mock_fix_char.side_effect = lambda x: x
+            result = s.character_has_changes(cname, new_data)
         assert result is None
 
     def test_char_has_changes_new(self, mock_ns, char_data):
@@ -689,8 +699,29 @@ class Test_AutoSimulationCraft:
         ccache = {}
         new_data = deepcopy(orig_data)
         s.character_cache = ccache
-        result = s.character_has_changes(cname, new_data)
+        with patch('autosimulationcraft.autosimulationcraft.'
+                   'AutoSimulationCraft.fix_char_for_diff') as mock_fix_char:
+            mock_fix_char.side_effect = lambda x: x
+            result = s.character_has_changes(cname, new_data)
         assert result == "Character not in cache (has not been seen before)."
+
+    def test_fix_char_for_diff(self, mock_ns, char_data):
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        sample_data = {'foo': 'bar', 'baz': 'blam'}
+        result = s.fix_char_for_diff(sample_data)
+        assert result == {'foo': 'bar', 'baz': 'blam'}
+
+    def test_fix_char_for_diff_profs(self, mock_ns, char_data):
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        assert 'professions' in char_data
+        result = s.fix_char_for_diff(char_data)
+        assert 'professions' not in result
+
+    def test_fix_char_for_diff_kills(self, mock_ns, char_data):
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        assert 'totalHonorableKills' in char_data
+        result = s.fix_char_for_diff(char_data)
+        assert 'totalHonorableKills' not in result
 
     def test_do_character_no_simc(self, mock_ns):
         """ test do_character() with SIMC_PATH non-existant """
