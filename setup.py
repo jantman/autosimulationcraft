@@ -32,6 +32,7 @@ setup(
     author='Jason Antman',
     author_email='jason@jasonantman.com',
     packages=['autosimulationcraft', 'autosimulationcraft.tests'],
+    package_data={'autosimulationcraft': ['data/*.lua']},
     entry_points="""
     [console_scripts]
     autosimc = autosimulationcraft.runner:console_entry_point
