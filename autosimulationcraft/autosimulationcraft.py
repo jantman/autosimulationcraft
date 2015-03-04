@@ -94,6 +94,7 @@ logging.basicConfig(level=logging.ERROR, format=FORMAT)
 
 
 class AutoSimulationCraft:
+
     """ might as well use a class. It'll make things easier later. """
 
     VERSION = '0.0.1'
@@ -254,6 +255,7 @@ class AutoSimulationCraft:
     def character_has_changes(self, c_name_realm, c_bnet):
         """
         Test if a chracter has changed since the last run.
+
         If it does not have changes, return None.
         If it does have changes, return a string human-readable representation
         of those changes.
@@ -448,9 +450,7 @@ class AutoSimulationCraft:
         return msg
 
     def send_gmail(self, from_addr, dest, msg_s):
-        """
-        Send email using GMail
-        """
+        """Send email using GMail"""
         s = smtplib.SMTP('smtp.gmail.com:587')
         s.starttls()
         s.login(self.settings.GMAIL_USERNAME, self.settings.GMAIL_PASSWORD)
@@ -466,9 +466,7 @@ class AutoSimulationCraft:
         s.quit()
 
     def now(self):
-        """
-        Helper function to make unit tests easier - return datetime.now()
-        """
+        """Helper function to make unit tests easier - return datetime.now() """
         return datetime.datetime.now()
 
     def get_battlenet(self, realm, character):
