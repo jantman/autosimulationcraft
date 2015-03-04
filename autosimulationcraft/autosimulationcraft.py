@@ -79,16 +79,15 @@ from email.mime.application import MIMEApplication
 from email.utils import formatdate
 from email.utils import make_msgid
 from email.utils import formataddr
+from dictdiffer import diff
+import battlenet
+
+from config import DEFAULT_CONFDIR
 
 if sys.version_info[0] > 3 or (sys.version_info[0] == 3 and sys.version_info[1] >= 3):
     import importlib.machinery
 else:
     import imp
-
-from dictdiffer import diff
-import battlenet
-
-from config import DEFAULT_CONFDIR
 
 FORMAT = "[%(levelname)s %(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
 logging.basicConfig(level=logging.ERROR, format=FORMAT)
