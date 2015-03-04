@@ -57,7 +57,7 @@ Requirements
 ------------
 
 * A working installation of `SimulationCraft <http://simulationcraft.org/>`_ with (at least) the command line portion.
-* Python __2.7__ - The upstream library that I chose to use for the BattleNet API only works with python2. As is the case
+* Python **2.7** - The upstream library that I chose to use for the BattleNet API only works with python2. As is the case
   with all of my current code, I target 2.7 through current (3.4) for development, as the effort to get code that also works with
   `horribly ancient <https://wiki.python.org/moin/Python2orPython3>`_ 2.6 isn't worth it. I've cut a branch to start work on solving
   this problem. Until then, 2.7 is it. Sorry.
@@ -91,7 +91,7 @@ Usage
 -----
 
 I'd recommend calling ``autosimc`` from cron, or some other method of running it automatically
-on a regular basis. If you want to, you _can_ run it manually.
+on a regular basis. If you want to, you *can* run it manually.
 
 Bugs and Feature Requests
 -------------------------
