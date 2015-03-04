@@ -32,7 +32,7 @@ When run, the script will first read in its configuration file (see below).
 
 For each character in the ``CHARACTERS`` dictionary, it will use the BattleNet API
 to request details about the character (currently: appearance, equipment, level,
-professions, stats and talents) and cache this information locally (in the same
+stats and talents) and cache this information locally (in the same
 directory as the configuration file). The first time a specific character is
 found in the configuration file, a ``simc`` report will be generated for the
 character, and emailed to a configurable (per-character) list of email addresses.
