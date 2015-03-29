@@ -64,6 +64,8 @@ def parse_args(argv):
     p.add_argument('-c', '--configdir', dest='confdir', action='store',
                    type=str, default=DEFAULT_CONFDIR,
                    help='configuration directory (default: {c})'.format(c=DEFAULT_CONFDIR))
+    p.add_argument('-s', '--no-stat', dest='no_stat', action='store_true', default=False,
+                   help='ignore overall stats when determining if character changed')
     p.add_argument('--genconfig', dest='genconfig', action='store_true', default=False,
                    help='generate a sample configuration file at configdir/settings.py')
     p.add_argument('--version', dest='version', action='store_true', default=False,
@@ -84,7 +86,7 @@ def console_entry_point():
         print("Configuration file generated at: {c}".format(c=cpath))
         raise SystemExit()
     script = AutoSimulationCraft(dry_run=args.dry_run, verbose=args.verbose, confdir=args.confdir)
-    script.run()
+    script.run(no_stat=args.no_stat)
 
 
 if __name__ == "__main__":

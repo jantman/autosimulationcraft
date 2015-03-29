@@ -55,6 +55,7 @@ def test_parse_argv():
     assert args.confdir == 'foobar'
     assert args.genconfig is True
     assert args.version is False
+    assert args.no_stat is False
 
 
 def test_console_entry_genconfig():
@@ -96,6 +97,7 @@ def test_console_entry():
         setattr(args, 'dry_run', False)
         setattr(args, 'verbose', 1)
         setattr(args, 'version', False)
+        setattr(args, 'no_stat', False)
         mock_parse_args.return_value = args
         autosimulationcraft.runner.console_entry_point()
     assert mock_parse_args.call_count == 1
@@ -104,4 +106,26 @@ def test_console_entry():
             dry_run=False,
             verbose=1,
             confdir='/foo/bar'),
-        call().run()]
+        call().run(no_stat=False)]
+
+
+def test_console_entry_no_stat():
+    """ test console_entry_point() """
+    with patch('autosimulationcraft.runner.parse_args') as mock_parse_args, \
+            patch('autosimulationcraft.runner.AutoSimulationCraft', autospec=True) as mock_AS:
+        args = Container()
+        setattr(args, 'genconfig', False)
+        setattr(args, 'confdir', '/foo/bar')
+        setattr(args, 'dry_run', False)
+        setattr(args, 'verbose', 1)
+        setattr(args, 'version', False)
+        setattr(args, 'no_stat', True)
+        mock_parse_args.return_value = args
+        autosimulationcraft.runner.console_entry_point()
+    assert mock_parse_args.call_count == 1
+    assert mock_AS.mock_calls == [
+        call(
+            dry_run=False,
+            verbose=1,
+            confdir='/foo/bar'),
+        call().run(no_stat=True)]
