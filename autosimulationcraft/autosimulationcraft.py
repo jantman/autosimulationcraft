@@ -225,7 +225,7 @@ class AutoSimulationCraft:
             return False
         return True
 
-    def run(self):
+    def run(self, no_stat=False):
         """ do stuff here """
         for char in self.settings.CHARACTERS:
             cname = self.make_character_name(char['name'], char['realm'])
@@ -239,7 +239,7 @@ class AutoSimulationCraft:
                 self.logger.warning("Character {c} not found on"
                                     " battlenet; skipping.".format(c=cname))
                 continue
-            changes = self.character_has_changes(cname, bnet_info)
+            changes = self.character_has_changes(cname, bnet_info, no_stat=no_stat)
             if changes is not None:
                 self.do_character(cname, char, changes)
             else:
@@ -252,7 +252,7 @@ class AutoSimulationCraft:
         realm = realm.replace(' ', '')
         return '{n}@{r}'.format(n=name, r=realm)
 
-    def fix_char_for_diff(self, char_dict):
+    def fix_char_for_diff(self, char_dict, no_stat=False):
         """
         Remove unimportant items for a character dict prior to diffing.
 
@@ -261,15 +261,19 @@ class AutoSimulationCraft:
 
         :param char_dict: character dict
         :type char_dict: dict
+        :param no_stat: ignore overall stats when determining if character changed
+        :type no_stat: Boolean
         :rtype: dict
         """
         if 'totalHonorableKills' in char_dict:
             del char_dict['totalHonorableKills']
         if 'professions' in char_dict:
             del char_dict['professions']
+        if 'stats' in char_dict and no_stat:
+            del char_dict['stats']
         return char_dict
 
-    def character_has_changes(self, c_name_realm, c_bnet):
+    def character_has_changes(self, c_name_realm, c_bnet, no_stat=False):
         """
         Test if a chracter has changed since the last run.
 
@@ -281,13 +285,15 @@ class AutoSimulationCraft:
         :type c_name_realm: string
         :param c_bnet: BattleNet data for this character
         :type c_bnet: battlenet.things.Character
+        :param no_stat: ignore overall stats when determining if character changed
+        :type no_stat: Boolean
         :rtype: None or String
         """
         if c_name_realm not in self.character_cache:
             self.logger.debug("character not in cache: {c}".format(c=c_name_realm))
             return "Character not in cache (has not been seen before)."
-        c_bnet = self.fix_char_for_diff(c_bnet)
-        c_old = self.fix_char_for_diff(self.character_cache[c_name_realm])
+        c_bnet = self.fix_char_for_diff(c_bnet, no_stat=no_stat)
+        c_old = self.fix_char_for_diff(self.character_cache[c_name_realm], no_stat=no_stat)
         if c_old == c_bnet:
             self.logger.debug("character identical in cache"
                               " and battlenet: {c}".format(c=c_name_realm))

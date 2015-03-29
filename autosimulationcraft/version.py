@@ -38,4 +38,4 @@ Jason Antman <jason@jasonantman.com> <http://www.jasonantman.com>
 
 """
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'

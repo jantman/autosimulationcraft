@@ -373,7 +373,7 @@ class Test_AutoSimulationCraft:
         assert mock_chc.call_args_list == [
             call(
                 'nameone@realmone', {
-                    'foo': 'bar'})]
+                    'foo': 'bar'}, no_stat=False)]
         assert mock_wcc.call_args_list == [call()]
         assert ccache == {'nameone@realmone': {'foo': 'bar'}}
 
@@ -485,7 +485,7 @@ class Test_AutoSimulationCraft:
         assert mock_chc.call_args_list == [
             call(
                 'nameone@realmone', {
-                    'foo': 'bar'})]
+                    'foo': 'bar'}, no_stat=False)]
         assert mock_wcc.call_args_list == [call()]
         assert ccache == {'nameone@realmone': {'foo': 'bar'}}
 
@@ -594,6 +594,10 @@ class Test_AutoSimulationCraft:
     def test_char_has_changes_true(self, mock_ns, char_data):
         """ test character_has_changes() with changes """
         bn, rc, mocklog, s, conn, lcc = mock_ns
+
+        def fix_se(char, no_stat=False):
+            return char
+
         orig_data = char_data
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {cname: orig_data}
@@ -620,13 +624,13 @@ class Test_AutoSimulationCraft:
                    'AutoSimulationCraft.character_diff') as mock_char_diff, \
             patch('autosimulationcraft.autosimulationcraft.'
                   'AutoSimulationCraft.fix_char_for_diff') as mock_fix_char:
-            mock_fix_char.side_effect = lambda x: x
+            mock_fix_char.side_effect = fix_se
             mock_char_diff.return_value = 'foobar'
-            result = s.character_has_changes(cname, new_data)
+            result = s.character_has_changes(cname, new_data, no_stat=False)
         assert result == 'foobar'
         assert mock_fix_char.mock_calls == [
-            call(new_data),
-            call(orig_data)
+            call(new_data, no_stat=False),
+            call(orig_data, no_stat=False),
         ]
         assert mock_char_diff.call_args_list == [call(orig_data, new_data)]
 
@@ -680,6 +684,10 @@ class Test_AutoSimulationCraft:
     def test_char_has_changes_false(self, mock_ns, char_data):
         """ test character_has_changes() without changes """
         bn, rc, mocklog, s, conn, lcc = mock_ns
+
+        def fix_se(char, no_stat=False):
+            return char
+
         orig_data = char_data
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {cname: orig_data}
@@ -687,13 +695,17 @@ class Test_AutoSimulationCraft:
         s.character_cache = ccache
         with patch('autosimulationcraft.autosimulationcraft.'
                    'AutoSimulationCraft.fix_char_for_diff') as mock_fix_char:
-            mock_fix_char.side_effect = lambda x: x
+            mock_fix_char.side_effect = fix_se
             result = s.character_has_changes(cname, new_data)
         assert result is None
 
     def test_char_has_changes_new(self, mock_ns, char_data):
         """ test character_has_changes() on never-before-seen character """
         bn, rc, mocklog, s, conn, lcc = mock_ns
+
+        def fix_se(char, no_stat=False):
+            return char
+
         orig_data = char_data
         cname = char_data['name'] + '@' + char_data['realm']
         ccache = {}
@@ -701,7 +713,7 @@ class Test_AutoSimulationCraft:
         s.character_cache = ccache
         with patch('autosimulationcraft.autosimulationcraft.'
                    'AutoSimulationCraft.fix_char_for_diff') as mock_fix_char:
-            mock_fix_char.side_effect = lambda x: x
+            mock_fix_char.side_effect = fix_se
             result = s.character_has_changes(cname, new_data)
         assert result == "Character not in cache (has not been seen before)."
 
@@ -722,6 +734,12 @@ class Test_AutoSimulationCraft:
         assert 'totalHonorableKills' in char_data
         result = s.fix_char_for_diff(char_data)
         assert 'totalHonorableKills' not in result
+
+    def test_fix_char_for_diff_no_stats(self, mock_ns, char_data):
+        bn, rc, mocklog, s, conn, lcc = mock_ns
+        assert 'stats' in char_data
+        result = s.fix_char_for_diff(char_data, no_stat=True)
+        assert 'stats' not in result
 
     def test_do_character_no_simc(self, mock_ns):
         """ test do_character() with SIMC_PATH non-existant """
