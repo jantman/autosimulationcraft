@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.1 (2015-03-29)
+------------------
+
+* #14 - Add -s/--no-stat option to ignore overall stat changes when comparing new/old character data.
+
 0.1.0 (2015-03-03)
 -------------------
 
