@@ -19,9 +19,10 @@ AutoSimulationCraft
    :target: https://codecov.io/github/jantman/autosimulationcraft?branch=master
    :alt: coverage report for master branch
 
-.. image:: http://www.repostatus.org/badges/latest/abandoned.svg
-   :alt: Project Status: Abandoned – Initial development has started, but there has not yet been a stable, usable release; the project has been abandoned and the author(s) do not intend on continuing development.
-   :target: http://www.repostatus.org/#abandoned
+.. image:: http://www.repostatus.org/badges/latest/unsupported.svg
+   :alt: Project Status: Unsupported - The project has reached a stable, usable state but the author(s) have ceased all work on it. A new maintainer may be desired.
+   :target: http://www.repostatus.org/#unsupported
+
 
 A python script to run `SimulationCraft <http://simulationcraft.org/>`_ reports for World of Warcraft characters when their gear/stats/level/etc. changes.
 
