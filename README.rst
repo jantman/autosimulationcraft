@@ -4,8 +4,9 @@ AutoSimulationCraft
 .. image:: https://pypip.in/v/autosimulationcraft/badge.png
    :target: https://crate.io/packages/autosimulationcraft
 
-.. image:: https://pypip.in/d/autosimulationcraft/badge.png
-   :target: https://crate.io/packages/autosimulationcraft
+.. image:: http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/autosimulationcraft/per-month.svg
+   :target: http://jantman-personal-public.s3-website-us-east-1.amazonaws.com/pypi-stats/autosimulationcraft/index.html
+   :alt: PyPi downloads
 
 .. image:: https://landscape.io/github/jantman/autosimulationcraft/master/landscape.svg
    :target: https://landscape.io/github/jantman/autosimulationcraft/master
